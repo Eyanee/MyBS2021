@@ -83,4 +83,21 @@ public class UserService {
     public boolean newUser(User t){
         return true;
     }
+    public String selectEmail(String username){
+        List<User> tUser;
+        tUser=selectUser(username);
+        User temp=tUser.get(0);
+        String email=temp.getEmail();
+        System.out.println("email is "+email);
+        return email;
+    }
+    public boolean updateUser(String UserName,String Password,String Email){
+        String sql="update user set email='"+Email+"', password='"+Password+"'where name='"+UserName+"'";
+        int res;
+        res=jdbcTemplate.update(sql);
+        if(res>0){
+            return true;
+        }
+        else return false;
+    }
 }

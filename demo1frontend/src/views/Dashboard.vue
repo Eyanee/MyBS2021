@@ -26,8 +26,8 @@
                             <span>个人资料</span>
                         </div>
                         <div class="right-items"  style="float: right;">
-                          <el-button size="small" type="danger" plain>修改</el-button>
-                          <el-button size="small" type="primary" plain>确认</el-button>
+                          <el-button size="small" type="danger" plain @click="EnableEdit()">修改</el-button>
+                          <el-button size="small" type="primary" plain @click="editInfo()">确认</el-button>
                         </div>
                       </el-container>
                     </template>
@@ -39,7 +39,7 @@
                       <span>昵称</span>
                     </div>
                     <el-col :span="15">
-                      <el-input placeholder="请输入密码" v-model="admin.username" show-password></el-input>
+                      <el-input placeholder="请输入昵称" v-model="admin.username" disabled="true"></el-input>
                       <p>{{userName}}</p>
                     </el-col>
                   </el-container>
@@ -49,7 +49,7 @@
                       <span>邮箱</span>
                     </div>
                     <el-col :span="15">
-                      <el-input placeholder="请输入密码" v-model="admin.email" show-password></el-input>
+                      <el-input placeholder="请输入邮箱" v-model="admin.email" v-bind:disabled="param.edit_en"></el-input>
                       <p>{{mailbox}}</p>
                     </el-col>
                   </el-container>
@@ -59,7 +59,7 @@
                       <span>密码</span>
                     </div>
                     <el-col :span="15">
-                      <el-input placeholder="请输入密码" v-model="admin.pwd" show-password></el-input>
+                      <el-input placeholder="请输入密码" v-model="admin.pwd" show-password v-bind:disabled="param.edit_en"></el-input>
                       <p>{{msg}}</p>
                     </el-col>
                   </el-container>
@@ -109,87 +109,51 @@
 <script>
 import Schart from "vue-schart";
 import { reactive } from "vue";
+import axios from "axios";
+import qs from "qs";
 export default {
     name: "dashboard",
     components: { Schart },
     setup() {
         const name = localStorage.getItem("ms_username");
+        const password =localStorage.getItem("ms_pwd");
+        const email =localStorage.getItem("ms_email");
         const role = name === "admin" ? "超级管理员" : "普通用户";
+        const param=reactive({
+              edit_en:true
+            });
         const admin = reactive({
-            username: "admin",
-            email: "Admin",
-            pwd: "admin",
+            username: name,
+            email: email,
+            pwd: password,
           });
-        const data = reactive([
-            {
-                name: "2018/09/04",
-                value: 1083,
-            },
-            {
-                name: "2018/09/05",
-                value: 941,
-            },
-            {
-                name: "2018/09/06",
-                value: 1139,
-            },
-            {
-                name: "2018/09/07",
-                value: 816,
-            },
-            {
-                name: "2018/09/08",
-                value: 327,
-            },
-            {
-                name: "2018/09/09",
-                value: 228,
-            },
-            {
-                name: "2018/09/10",
-                value: 1065,
-            },
-        ]);
-        const options = {
+        const EnableEdit = () => {
+            param.edit_en=false;
+            console.log("okk");
         };
-        const options2 = {
+        const editInfo = () =>{
+          let EditData=qs.stringify({UserName:admin.username,Password:admin.pwd,Email:admin.email});
+
+          axios.post('http://localhost:8080/Edit',EditData)
+              .then(function (response) {
+                console.log(response);
+                console.log(response.data)
+                if(errorcode==true){
+                  param.edit_en=false;
+                }
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
 
         };
-        const todoList = reactive([
-            {
-                title: "今天要修复100个bug",
-                status: false,
-            },
-            {
-                title: "今天要修复100个bug",
-                status: false,
-            },
-            {
-                title: "今天要写100行代码加几个bug吧",
-                status: false,
-            },
-            {
-                title: "今天要修复100个bug",
-                status: false,
-            },
-            {
-                title: "今天要修复100个bug",
-                status: true,
-            },
-            {
-                title: "今天要写100行代码加几个bug吧",
-                status: true,
-            },
-        ]);
-
-        return {
+      return {
             admin,
             name,
-            data,
-            options,
-            options2,
-            todoList,
             role,
+            param,
+            EnableEdit,
+            editInfo,
         };
     },
 };
@@ -201,6 +165,7 @@ export default {
 }
 .clearfix{
   text-align: left;
+  font-size: 13px;
   margin-top: 2%;
 }
 .right-items{

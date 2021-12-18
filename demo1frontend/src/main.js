@@ -6,6 +6,7 @@ import installElementPlus from './plugins/element'
 import './assets/css/icon.css'
 const app = createApp(App)
 import qs from "qs";
+
 installElementPlus(app)
 app
     .use(store)

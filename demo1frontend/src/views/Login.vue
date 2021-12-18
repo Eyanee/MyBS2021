@@ -58,6 +58,7 @@ export default {
         const login = ref(null);
         const submitForm = () => {
           let loginData=qs.stringify({UserName:param.username,Password:param.password});
+          let EmailData=qs.stringify({username:param.username});
           //var login={UserName:param.username,Password:param.password};
           console.log(param.username);
           axios.post('http://localhost:8080/login',loginData)
@@ -67,7 +68,14 @@ export default {
             console.log(response.data)
             if(errorcode==true){
               localStorage.setItem("ms_username", param.username);
+              localStorage.setItem("ms_pwd",param.password);
               console.log("Ok!");
+              axios.post('http://localhost:8080/foremail',EmailData)
+              .then(function (response) {
+                var x=response.data;
+                localStorage.setItem("ms_email",x);
+                console.log(x);
+              });
               router.push("/");
             }
           })

@@ -33,9 +33,19 @@ public class LoginController {
     @RequestMapping("/newUser")
     public boolean InsertUser(User t){
         boolean res;
-        UserService myServer=new UserService();
         res=myServer.newUser(t);
         return res;
     }
-
+    @RequestMapping("/foremail")
+    public String AskForEmail(String username){
+        String temp;
+        temp=myServer.selectEmail(username);
+        return temp;
+    }
+    @RequestMapping("/Edit")
+    public boolean UpdateInfo(String UserName,String Password,String Email){
+        boolean res;
+        res=myServer.updateUser(UserName,Password,Email);
+        return res;
+    }
 }
