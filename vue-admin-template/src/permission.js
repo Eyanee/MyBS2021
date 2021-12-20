@@ -1,10 +1,7 @@
 import router from './router'
-import store from './store'
-import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
-import getPageTitle from '@/utils/get-page-title'
 
 // 拦截器 删除就关了
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
@@ -22,9 +19,9 @@ router.beforeEach((to, from, next) => {
     console.log('显示valid----------：' + m)
     // 判断当前的token是否存在，也就是登录时的token
     if (m === 'true') {
-      // 如果指向的是登录页面，不做任何操作
+      // 如果指向的是登录页面或者注册，不做任何操作
       // eslint-disable-next-line no-empty
-      if (to.path === '/login') {
+      if (to.path === '/login' || to.path === '/register') {
         console.log('1')
       } else {
         // 如果不是登录页面，且token存在，就放行

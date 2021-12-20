@@ -3,7 +3,7 @@
     <el-form ref="loginForm" :model="loginForm" class="login-form" auto-complete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">Login In</h3>
+        <h3 class="title">注册账号</h3>
       </div>
 
       <el-form-item prop="username">
@@ -40,12 +40,40 @@
           <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
         </span>
       </el-form-item>
+      <!--      电话号码-->
+      <el-form-item prop="phone_number">
+        <span class="svg-container">
+          <svg-icon icon-class="phone" />
+        </span>
+        <el-input
+          ref="phone_number"
+          v-model="loginForm.phone_number"
+          placeholder="phone number"
+          name="phone_number"
+          type="text"
+          tabindex="1"
+          auto-complete="on"
+        />
+      </el-form-item>
+      <el-form-item prop="email">
+        <span class="svg-container">
+          <svg-icon icon-class="email" />
+        </span>
+        <span><el-input
+          ref="email"
+          v-model="loginForm.email"
+          placeholder="email"
+          name="email"
+          type="text"
+          tabindex="1"
+          auto-complete="on"
+        /></span>
+      </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="login">Login</el-button>
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="send">注册</el-button>
 
       <div class="tips">
-        <span style="margin-right:20px;">还没注册？</span>
-        <span> <router-link to="/register" class="reg">点击此处注册</router-link> </span>
+        <div v-show="is_show" v-text="error_text" />
       </div>
 
     </el-form>
@@ -53,13 +81,13 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
+// import { validUsername } from '@/utils/validate'
 import { setToken, getToken } from '@/utils/auth'
 export default {
-  name: 'Login',
+  name: 'Register',
   data() {
     const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
+      if (!value.length() < 6) {
         callback(new Error('Please enter the correct user name'))
       } else {
         callback()
@@ -74,15 +102,20 @@ export default {
     }
     return {
       loginForm: {
-        username: 'Arina',
-        password: '123456'
+        username: '',
+        password: '',
+        phone_number: '',
+        email: '',
+        code: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       loading: false,
-      passwordType: 'password'
+      passwordType: 'password',
+      is_show: false,
+      error_text: '失败！用户名或密码长度不足6字节'
     }
   },
   watch: {
@@ -104,34 +137,39 @@ export default {
         this.$refs.password.focus()
       })
     },
-    login: function() {
+    send: function() {
       var _this = this
-      console.log(_this.loginForm.username + '///' + _this.loginForm.password)
-      _this.$http.post('http://localhost:8080/login', {
-        UserName: _this.loginForm.username,
-        Password: _this.loginForm.password
-      }, { emulateJSON: true }
-      )
-        .then(function(response) {
-          var errorcode = response.data
-          if (errorcode === true) {
-            console.log(errorcode)
-            setToken(true)
-            const has = getToken()
-            console.log(has + 'is')
-            localStorage.setItem('valid', true)
-            this.$router.push({ path: this.redirect || '/' })
+      if (_this.loginForm.username.length < 6 || _this.loginForm.password.length < 6) {
+        _this.is_show = true
+      } else {
+        _this.error_text = ''
+        _this.is_show = true
+        _this.$http.post('http://localhost:8080/register', {
+          UserName: _this.loginForm.username,
+          Password: _this.loginForm.password,
+          Email: _this.loginForm.email,
+          Phone: _this.loginForm.phone_number
+        }, { emulateJSON: true }
+        ).then(function(response) {
+          return response.text()
+        }).then(function(response) {
+          var errorcode = response
+          console.log(errorcode)
+          if (errorcode === 'duplicateName') {
+            _this.error_text = '失败！用户名不唯一'
+          } else if (errorcode === 'duplicateEmail') {
+            _this.error_text = '失败！邮箱地址不唯一'
+          } else if (errorcode === 'erroraddress') {
+            _this.error_text = '邮箱地址错误，请检查您的格式'
+          } else if (errorcode === 'success') {
+            _this.error_text = '注册成功'
+            _this.$router.push({ path: '/login' })
           } else {
-            console.log('error submit!!')
-            return false
+            _this.error_text = '注册失败'
           }
         })
-        // eslint-disable-next-line handle-callback-err
-        .catch(function(error) {
-          this.loading = false
-        })
+      }
     }
-
   }
 }
 </script>
@@ -243,9 +281,6 @@ $light_gray:#eee;
     color: $dark_gray;
     cursor: pointer;
     user-select: none;
-  }
-  .reg{
-    color: blue;
   }
 }
 </style>

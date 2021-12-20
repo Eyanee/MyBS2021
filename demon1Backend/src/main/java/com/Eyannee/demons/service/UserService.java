@@ -15,6 +15,8 @@ import javax.annotation.Resource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class UserService {
@@ -110,23 +112,24 @@ public class UserService {
         }
         else return false;
     }
-    public String insertUser(String UserName,String Password,String Email,String Phone){
-        if(checkUserValid(UserName)){
-            return "invalid User";
-        }
-        if(checkEmailValid(Email)){
-            return "invalid email";
-        }
-        //发送邮件并验证
 
-        //验证成功则插入新记录
+    //检查邮箱格式
+    public boolean checkEmailForm(String Email){
+        String regex = "^(.+)@(.+)$";
+        if(Email.matches(regex)){
+            return true;
+        }
+        else return false;
+    }
+
+    public boolean insertUser(String UserName,String Password,String Email,String Phone){
         String sql="insert into user values('"+UserName+"','"+Password+"','"+Email+"','"+Phone+"')";
         int res;
         res=jdbcTemplate.update(sql);
         if(res>0){
-            return "success";
+            return true;
         }
-        else return "failure";
+        else return false;
     }
 
 }
