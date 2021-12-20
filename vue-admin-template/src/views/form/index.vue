@@ -1,85 +1,418 @@
 <template>
-  <div class="app-container">
-    <el-form ref="form" :model="form" label-width="120px">
-      <el-form-item label="Activity name">
-        <el-input v-model="form.name" />
-      </el-form-item>
-      <el-form-item label="Activity zone">
-        <el-select v-model="form.region" placeholder="please select your zone">
-          <el-option label="Zone one" value="shanghai" />
-          <el-option label="Zone two" value="beijing" />
+  <div>
+    <el-form :model="formInline">
+      <el-form-item label="数据集：">
+        <el-select v-model="formInline.region" placeholder="选择数据集">
+          <el-option
+            v-for="item in dataList"
+            :key="item"
+            :label="item.name"
+            :value="item.code"
+          />
         </el-select>
+        <el-button type="primary" style="margin-left: 20px">选择</el-button>
       </el-form-item>
-      <el-form-item label="Activity time">
-        <el-col :span="11">
-          <el-date-picker v-model="form.date1" type="date" placeholder="Pick a date" style="width: 100%;" />
-        </el-col>
-        <el-col :span="2" class="line">-</el-col>
-        <el-col :span="11">
-          <el-time-picker v-model="form.date2" type="fixed-time" placeholder="Pick a time" style="width: 100%;" />
-        </el-col>
-      </el-form-item>
-      <el-form-item label="Instant delivery">
-        <el-switch v-model="form.delivery" />
-      </el-form-item>
-      <el-form-item label="Activity type">
-        <el-checkbox-group v-model="form.type">
-          <el-checkbox label="Online activities" name="type" />
-          <el-checkbox label="Promotion activities" name="type" />
-          <el-checkbox label="Offline activities" name="type" />
-          <el-checkbox label="Simple brand exposure" name="type" />
-        </el-checkbox-group>
-      </el-form-item>
-      <el-form-item label="Resources">
-        <el-radio-group v-model="form.resource">
-          <el-radio label="Sponsor" />
-          <el-radio label="Venue" />
+
+      <el-form-item label="图片筛选：">
+        <el-radio-group v-model="formInline.radio" @change="handleChange">
+          <el-radio-button label="全部" />
+          <el-radio-button label="未标注" />
+          <el-radio-button label="已标注" />
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="Activity form">
-        <el-input v-model="form.desc" type="textarea" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="onSubmit">Create</el-button>
-        <el-button @click="onCancel">Cancel</el-button>
-      </el-form-item>
+      <!-- <el-form-item>
+        <el-button type="primary">选择</el-button>
+      </el-form-item> -->
     </el-form>
+
+    <!-- 图片导航 -->
+    <div class="pics">
+      <div class="arrow arrow-left" @click="showMore('down')" />
+      <div class="pic-container">
+        <div ref="picContainer" class="pic-box">
+          <div v-for="(v, i) in pics" :key="i" class="pic">
+            <div
+              class="info"
+              :style="{ 'background-image': 'url(' + v.cropImage + ')' }"
+              @click="activePic(v.cropImage)"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="arrow arrow-right" @click="showMore('up')" />
+    </div>
+
+    <el-row :gutter="10" class="tagList">
+      <el-col :span="17">
+        <ui-marker
+          ref="aiPanel-editor"
+          class="ai-observer"
+          :unique-key="uuid"
+          :ratio="11/ 6"
+          :img-url="currentInfo.currentBaseImage"
+          @vmarker:onImageLoad="onImageLoad"
+        />
+      </el-col>
+      <el-col :span="6">
+        <div class="title">标签</div>
+        <div v-for="(v, i) in tags" :key="i" class="tags">
+          <el-tag size="small" @click="setTag(v)">
+            {{ v.tagName }}
+          </el-tag>
+          <i class="el-icon-delete" @click="delTag(i)" />
+        </div>
+        <el-row>
+          <el-button type="success" class="handleButton" @click="addTag">
+            添加标签
+          </el-button>
+        </el-row>
+        <el-button type="primary" class="handleButton" @click="submitForm">
+          提交标注
+        </el-button>
+      </el-col>
+    </el-row>
+
+    <!-- 添加标签 dialog -->
+    <el-dialog
+      width="30%"
+      title="添加标签"
+      :visible.sync="innerVisible"
+      :before-close="beforeClose"
+    >
+      <el-form ref="innerForm" :model="innerForm" :rules="tep_rules">
+        <el-form-item label="标签名称：" prop="tagName">
+          <el-input v-model="innerForm.tagName" />
+        </el-form-item>
+        <el-form-item label="标签编码：" prop="tag">
+          <el-input v-model="innerForm.tag" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="close">取 消</el-button>
+        <el-button type="primary" @click="createForm('innerForm')">
+          确 定
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
-
 <script>
+// import { AIMarker } from 'Vue-Picture-BD-Marker'
+import { AIMarker } from 'vue-picture-bd-marker'
 export default {
+  name: 'StagePicPage',
+  components: { 'ui-marker': AIMarker },
   data() {
     return {
-      form: {
-        name: '',
+      formInline: {
         region: '',
-        date1: '',
-        date2: '',
-        delivery: false,
-        type: [],
-        resource: '',
-        desc: ''
+        radio: '全部'
+      },
+      dataList: [
+        { name: '安全帽', code: 1 },
+        { name: '火焰', code: 2 }
+      ],
+
+      uuid: '0da9130',
+      // 当前图片的信息，包含图片原本的高矮胖瘦尺寸
+      currentInfo: {
+        currentBaseImage:
+          'https://seopic.699pic.com/photo/50041/3365.jpg_wh1200.jpg',
+        rawW: 0,
+        rawH: 0,
+        currentW: 0,
+        currentH: 0,
+        checked: false, // false表示当前图片还没有标记过
+        data: [] // 表示图片矩形标记信息
+      },
+
+      // *****************************
+      pics: [
+        {
+          cropImage: 'https://seopic.699pic.com/photo/50041/3365.jpg_wh1200.jpg'
+        },
+        {
+          cropImage: 'https://seopic.699pic.com/photo/50041/3365.jpg_wh1200.jpg'
+        },
+        {
+          cropImage: 'https://seopic.699pic.com/photo/50098/1015.jpg_wh1200.jpg'
+        },
+        {
+          cropImage: 'https://seopic.699pic.com/photo/50098/1015.jpg_wh1200.jpg'
+        },
+        {
+          cropImage: 'https://seopic.699pic.com/photo/50050/5027.jpg_wh1200.jpg'
+        },
+        {
+          cropImage: 'https://seopic.699pic.com/photo/50140/6207.jpg_wh1200.jpg'
+        }
+      ],
+      active: 0, // 当前图片序号
+      picTotal: 10, // 照片总数
+
+      // *********************************************
+      tags: [
+        {
+          tagName: '小蜜蜂',
+          tag: '0x0001'
+        },
+        {
+          tagName: '汽车',
+          tag: '0x0002'
+        }
+      ],
+      allInfo: [], // 图片的矩形标记信息集合
+      imageInfo: [], // 存储图片原始信息
+
+      innerVisible: false,
+      innerForm: {
+        tagName: '',
+        tag: ''
+      },
+
+      tep_rules: {
+        tagName: [{ required: true, message: '请输入', trigger: 'blur' }],
+        tag: [{ required: true, message: '请输入', trigger: 'blur' }]
       }
     }
   },
+  mounted() {
+    // this.onImageLoad()
+  },
   methods: {
-    onSubmit() {
-      this.$message('submit!')
+    /** 记录图片当前的大小和原始大小 data={rawW,rawH,currentW,currentH} */
+    onImageLoad(data) {
+      console.log(data)
+      this.imageInfo = data
     },
-    onCancel() {
-      this.$message({
-        message: 'cancel!',
-        type: 'warning'
+
+    setTag(v) {
+      this.$refs['aiPanel-editor'].getMarker().setTag(v)
+    },
+    addTag() {
+      this.innerVisible = true
+      this.innerForm.tagName = ''
+      this.innerForm.tag = ''
+    },
+    delTag(index) {
+      this.tags.splice(index, 1)
+    },
+    close() {
+      this.innerVisible = false
+      this.$refs['innerForm'].resetFields()
+    },
+    beforeClose(done) {
+      this.$refs['innerForm'].resetFields()
+      done()
+    },
+    createForm(formName) {
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          for (const index in this.tags) {
+            const item = this.tags[index]
+            if (
+              item.tagName === this.innerForm.tagName ||
+              item.tag === this.innerForm.tag
+            ) {
+              this.$message.warning('标签名或标签值已存在，请重新输入')
+              return
+            }
+          }
+          this.tags.push({
+            tagName: this.innerForm.tagName,
+            tag: this.innerForm.tag
+          })
+          this.innerVisible = false
+        }
       })
+    },
+    /**
+     * 完成标记，提交标记集合
+     */
+    submitForm() {
+      const data = this.$refs['aiPanel-editor'].getMarker().getData()
+
+      this.allInfo = data
+      console.log(this.allInfo)
+
+      const size = {
+        width: this.imageInfo.rawW,
+        height: this.imageInfo.rawH
+      }
+      const xmin =
+        (parseInt(
+          this.allInfo[0].position.x.substring(
+            0,
+            this.allInfo[0].position.x.length - 1
+          )
+        ) *
+          size.width) /
+        100
+      console.log(xmin, '左上')
+      const ymin =
+        (parseInt(
+          this.allInfo[0].position.y.substring(
+            0,
+            this.allInfo[0].position.y.length - 1
+          )
+        ) *
+          size.height) /
+        100
+      console.log(ymin, '右手上')
+      const xmax =
+        (parseInt(
+          this.allInfo[0].position.x1.substring(
+            0,
+            this.allInfo[0].position.x1.length - 1
+          )
+        ) *
+          size.width) /
+        100
+      console.log(xmax, '右上')
+      const ymax =
+        (parseInt(
+          this.allInfo[0].position.y1.substring(
+            0,
+            this.allInfo[0].position.y1.length - 1
+          )
+        ) *
+          size.height) /
+        100
+      console.log(ymax, '左上')
+
+      console.log(
+        (xmax - xmin).toFixed(2),
+        (ymax - ymin).toFixed(2),
+        '计算矩形宽高'
+      )
+    },
+
+    // 点击左右按钮显示更多
+    showMore(v) {
+      const el = this.$refs.picContainer
+
+      if (v === 'up') {
+        this.active++
+        if (this.active >= this.picTotal - 3) {
+          // 最后4张图
+          this.active = this.pics.length - 3
+          return
+        }
+        if (
+          this.pics.length - 3 === this.active &&
+          this.pics.length < this.picTotal
+        ) {
+          this.photoPageIndex++
+          this.getPhotos()
+          return
+        }
+      } else {
+        this.active--
+        if (this.active < 0) this.active = 0
+      }
+      el.style.transform =
+        'translateX(-' + (this.active / this.pics.length) * 100 + '%)'
+    },
+
+    getPhotos() {
+      return this.$nextTick(() => {
+        const el = this.$refs.picContainer
+        if (el) {
+          el.style.width = el.scrollWidth + 'px'
+
+          el.style.transform =
+            'translateX(-' + (this.active / this.pics.length) * 100 + '%)'
+        }
+      })
+    },
+    /** 得到当前点击图片*/
+    activePic(v) {
+      this.currentInfo.currentBaseImage = v
+    },
+
+    handleChange(label) {
+      console.log(label)
     }
   }
 }
 </script>
 
-<style scoped>
-.line{
-  text-align: center;
+<style lang="scss" scoped>
+.pics {
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .arrow {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-image: url('../../assets/404_images/404.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    &.arrow-right {
+      transform: rotate(180deg);
+    }
+  }
+  .pic-container {
+    // width: 1180px;
+    width: calc(100% - 30px);
+    height: 104px;
+    margin: 0px auto;
+    overflow: hidden;
+    .pic-box {
+      height: 100%;
+      // min-width: 1180px;
+      min-width: calc(100% - 50px);
+      transition: all 0.5s linear;
+      display: flex;
+      flex-wrap: nowrap;
+    }
+    .pic {
+      float: left;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      margin-right: 10px;
+      margin-left: 10px;
+      width: 185px;
+      height: 114px;
+      .info {
+        width: 183px;
+        height: 100%;
+        background-size: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+        position: relative;
+        &:hover {
+          border: 1px solid skyblue;
+        }
+      }
+    }
+  }
+}
+
+.tagList {
+  padding-left: 10px;
+  padding-bottom: 30px;
+  .title {
+    text-align: center;
+    font-weight: bold;
+  }
+  .handleButton {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .tags {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px ;
+    .el-icon-delete {
+      cursor: pointer;
+    }
+  }
 }
 </style>
 

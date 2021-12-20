@@ -120,6 +120,8 @@ export default {
             const has = getToken()
             console.log(has + 'is')
             localStorage.setItem('valid', true)
+            localStorage.setItem('username', _this.loginForm.username)
+            localStorage.setItem('password', _this.loginForm.password)
             this.$router.push({ path: this.redirect || '/' })
           } else {
             console.log('error submit!!')
