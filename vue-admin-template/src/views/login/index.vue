@@ -1,9 +1,9 @@
 <template>
   <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
+    <el-form ref="loginForm" :model="loginForm" class="login-form" auto-complete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <h3 class="title">Login In</h3>
       </div>
 
       <el-form-item prop="username">
@@ -34,14 +34,14 @@
           name="password"
           tabindex="2"
           auto-complete="on"
-          @keyup.enter.native="handleLogin"
+          @keyup.enter.native="login"
         />
         <span class="show-pwd" @click="showPwd">
           <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
         </span>
       </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="login">Login</el-button>
 
       <div class="tips">
         <span style="margin-right:20px;">username: admin</span>
@@ -54,7 +54,7 @@
 
 <script>
 import { validUsername } from '@/utils/validate'
-
+import { setToken, getToken } from '@/utils/auth'
 export default {
   name: 'Login',
   data() {
@@ -74,16 +74,15 @@ export default {
     }
     return {
       loginForm: {
-        username: 'admin',
-        password: '111111'
+        username: 'Arina',
+        password: '123456'
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       loading: false,
-      passwordType: 'password',
-      redirect: undefined
+      passwordType: 'password'
     }
   },
   watch: {
@@ -105,22 +104,34 @@ export default {
         this.$refs.password.focus()
       })
     },
-    handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
+    login: function() {
+      var _this = this
+      console.log(_this.loginForm.username + '///' + _this.loginForm.password)
+      _this.$http.post('http://localhost:8080/login', {
+        UserName: _this.loginForm.username,
+        Password: _this.loginForm.password
+      }, { emulateJSON: true }
+      )
+        .then(function(response) {
+          var errorcode = response.data
+          if (errorcode === true) {
+            console.log(errorcode)
+            setToken(true)
+            const has = getToken()
+            console.log(has + 'is')
+            localStorage.setItem('valid', true)
             this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
-          }).catch(() => {
-            this.loading = false
-          })
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
+          } else {
+            console.log('error submit!!')
+            return false
+          }
+        })
+        // eslint-disable-next-line handle-callback-err
+        .catch(function(error) {
+          this.loading = false
+        })
     }
+
   }
 }
 </script>

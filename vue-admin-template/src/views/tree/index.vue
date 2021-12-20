@@ -1,251 +1,418 @@
 <template>
-  <div class="app-container">
-    <!-- 按钮组 -->
-    <div class="button-group">
-      <div class="button-group-item">
-        <el-upload
-          class="upload-demo"
-          name="file"
-          multiple
-          accept="text/plain"
-          :headers="{ 'annotate-system-token': token }"
-          action="http://localhost:8000/api/annotate_text/upload/"
-          :on-success="handleSuccess"
-          :on-error="handleError"
-          :show-file-list="false"
-        >
-          <el-button type="primary">
-            打开文件夹
-          </el-button>
-        </el-upload>
+  <div>
+    <el-form :model="formInline">
+      <el-form-item label="数据集：">
+        <el-select v-model="formInline.region" placeholder="选择数据集">
+          <el-option
+            :key="item"
+            v-for="item in dataList"
+            :label="item.name"
+            :value="item.code"
+          />
+        </el-select>
+        <el-button type="primary" style="margin-left: 20px">选择</el-button>
+      </el-form-item>
+
+      <el-form-item label="图片筛选：">
+        <el-radio-group v-model="formInline.radio" @change="handleChange">
+          <el-radio-button label="全部" />
+          <el-radio-button label="未标注" />
+          <el-radio-button label="已标注" />
+        </el-radio-group>
+      </el-form-item>
+      <!-- <el-form-item>
+        <el-button type="primary">选择</el-button>
+      </el-form-item> -->
+    </el-form>
+
+    <!-- 图片导航 -->
+    <div class="pics">
+      <div class="arrow arrow-left" @click="showMore('down')" />
+      <div class="pic-container">
+        <div ref="picContainer" class="pic-box">
+          <div v-for="(v, i) in pics" :key="i" class="pic">
+            <div
+              class="info"
+              :style="{ 'background-image': 'url(' + v.cropImage + ')' }"
+              @click="activePic(v.cropImage)"
+            />
+          </div>
+        </div>
       </div>
+      <div class="arrow arrow-right" @click="showMore('up')" />
     </div>
-    <div>
-      <!--  -->
-      <ui-marker
-        ref="aiPanel-editor"
-        class="ai-observer"
-        :unique-key="uuid"
-        :ratio="16/9"
-        :read-only="readOnly"
-        :img-url="currentImage"
-      />
-    </div>
+
+    <el-row :gutter="10" class="tagList">
+      <el-col :span="17">
+        <ui-marker
+          ref="aiPanel-editor"
+          class="ai-observer"
+          :unique-key="uuid"
+          :ratio="11/ 6"
+          :img-url="currentInfo.currentBaseImage"
+          @vmarker:onImageLoad="onImageLoad"
+        />
+      </el-col>
+      <el-col :span="6">
+        <div class="title">标签</div>
+        <div v-for="(v, i) in tags" :key="i" class="tags">
+          <el-tag size="small" @click="setTag(v)">
+            {{ v.tagName }}
+          </el-tag>
+          <i class="el-icon-delete" @click="delTag(i)" />
+        </div>
+        <el-row>
+          <el-button type="success" class="handleButton" @click="addTag">
+            添加标签
+          </el-button>
+        </el-row>
+        <el-button type="primary" class="handleButton" @click="submitForm">
+          提交标注
+        </el-button>
+      </el-col>
+    </el-row>
+
+    <!-- 添加标签 dialog -->
+    <el-dialog
+      width="30%"
+      title="添加标签"
+      :visible.sync="innerVisible"
+      :before-close="beforeClose"
+    >
+      <el-form ref="innerForm" :model="innerForm" :rules="tep_rules">
+        <el-form-item label="标签名称：" prop="tagName">
+          <el-input v-model="innerForm.tagName" />
+        </el-form-item>
+        <el-form-item label="标签编码：" prop="tag">
+          <el-input v-model="innerForm.tag" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="close">取 消</el-button>
+        <el-button type="primary" @click="createForm('innerForm')">
+          确 定
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
-
 <script>
-import {
-  deleteAnnotateTextApi,
-  updateAnnotateTextInfoApi,
-  removeAllAnnotateTextApi
-} from '../../api/Text'
-import { getToken } from '@/utils/auth'
-import { mapGetters } from 'vuex'
+// import { AIMarker } from 'Vue-Picture-BD-Marker'
 import { AIMarker } from 'vue-picture-bd-marker'
-
 export default {
-  name: 'ImgAnnotate',
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        已标注: 'success',
-        未标注: 'gray'
-      }
-      return statusMap[status]
-    }
-  },
+  name: 'StagePicPage',
   components: { 'ui-marker': AIMarker },
   data() {
     return {
-      searchTarget: '描述', // 搜索对象
+      formInline: {
+        region: '',
+        radio: '全部'
+      },
+      dataList: [
+        { name: '安全帽', code: 1 },
+        { name: '火焰', code: 2 }
+      ],
+
       uuid: '0da9130',
-      readOnly: false,
-      currentImage: '../../assets/404_images/404',
-      keywords: '', // 搜索关键词
-      filterList: [], // 符合条件的数据
-      list: [], // 所有数据列表
-      listLoading: true, // 加载效果
-      showEditForm: false, // 编辑框的显隐
-      listEditIndex: 0, // 编辑索引
-      handleItemId: 0, // 操作条目的id
-      form: {
-        // 编辑框数据
-        description: '',
-        text: ''
+      // 当前图片的信息，包含图片原本的高矮胖瘦尺寸
+      currentInfo: {
+        currentBaseImage:
+          'https://seopic.699pic.com/photo/50041/3365.jpg_wh1200.jpg',
+        rawW: 0,
+        rawH: 0,
+        currentW: 0,
+        currentH: 0,
+        checked: false, // false表示当前图片还没有标记过
+        data: [] // 表示图片矩形标记信息
+      },
+
+      // *****************************
+      pics: [
+        {
+          cropImage: 'https://seopic.699pic.com/photo/50041/3365.jpg_wh1200.jpg'
+        },
+        {
+          cropImage: 'https://seopic.699pic.com/photo/50041/3365.jpg_wh1200.jpg'
+        },
+        {
+          cropImage: 'https://seopic.699pic.com/photo/50098/1015.jpg_wh1200.jpg'
+        },
+        {
+          cropImage: 'https://seopic.699pic.com/photo/50098/1015.jpg_wh1200.jpg'
+        },
+        {
+          cropImage: 'https://seopic.699pic.com/photo/50050/5027.jpg_wh1200.jpg'
+        },
+        {
+          cropImage: 'https://seopic.699pic.com/photo/50140/6207.jpg_wh1200.jpg'
+        }
+      ],
+      active: 0, // 当前图片序号
+      picTotal: 10, // 照片总数
+
+      // *********************************************
+      tags: [
+        {
+          tagName: '小蜜蜂',
+          tag: '0x0001'
+        },
+        {
+          tagName: '汽车',
+          tag: '0x0002'
+        }
+      ],
+      allInfo: [], // 图片的矩形标记信息集合
+      imageInfo: [], // 存储图片原始信息
+
+      innerVisible: false,
+      innerForm: {
+        tagName: '',
+        tag: ''
+      },
+
+      tep_rules: {
+        tagName: [{ required: true, message: '请输入', trigger: 'blur' }],
+        tag: [{ required: true, message: '请输入', trigger: 'blur' }]
       }
     }
   },
-  computed: {
-    // 编辑框宽度
-    width() {
-      return window.innerWidth <= 400 ? '80%' : '30%'
-    },
-    token() {
-      return getToken()
-    },
-    ...mapGetters(['annotateTextList'])
-  },
   mounted() {
-    this.list = this.filterList = this.annotateTextList
-    this.listLoading = false
+    // this.onImageLoad()
   },
   methods: {
-    /**
-     * 上传成功的回调函数
-     * @param response 响应数据
-     */
-    handleSuccess(response) {
-      this.$message.success('上传成功')
-      this.$store.dispatch('user/setAnnotateTextList', response.data)
+    /** 记录图片当前的大小和原始大小 data={rawW,rawH,currentW,currentH} */
+    onImageLoad(data) {
+      console.log(data)
+      this.imageInfo = data
+    },
 
-      this.filterList = this.list = response.data
+    setTag(v) {
+      this.$refs['aiPanel-editor'].getMarker().setTag(v)
     },
-    /**
-     * 上传失败回调函数
-     */
-    handleError() {
-      this.$message.error('上传失败')
+    addTag() {
+      this.innerVisible = true
+      this.innerForm.tagName = ''
+      this.innerForm.tag = ''
     },
-    /**
-     * 导出数据
-     */
-    //  TODO 导出数据
-    exportData() {
+    delTag(index) {
+      this.tags.splice(index, 1)
     },
-    /**
-     * 清空文本数据
-     */
-    removeAll() {
-      this.$confirm('确定要删除吗?', '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        removeAllAnnotateTextApi(this.token)
-        this.$store.dispatch('user/setAnnotateTextList', [])
-        this.list = []
-        this.filterList = []
+    close() {
+      this.innerVisible = false
+      this.$refs['innerForm'].resetFields()
+    },
+    beforeClose(done) {
+      this.$refs['innerForm'].resetFields()
+      done()
+    },
+    createForm(formName) {
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          for (const index in this.tags) {
+            const item = this.tags[index]
+            if (
+              item.tagName === this.innerForm.tagName ||
+              item.tag === this.innerForm.tag
+            ) {
+              this.$message.warning('标签名或标签值已存在，请重新输入')
+              return
+            }
+          }
+          this.tags.push({
+            tagName: this.innerForm.tagName,
+            tag: this.innerForm.tag
+          })
+          this.innerVisible = false
+        }
       })
     },
+    /**
+     * 完成标记，提交标记集合
+     */
+    submitForm() {
+      const data = this.$refs['aiPanel-editor'].getMarker().getData()
 
-    /**
-     * 搜索文本
-     */
-    search() {
-      const keywords = this.keywords.trim()
+      this.allInfo = data
+      console.log(this.allInfo)
 
-      if (this.searchTarget === '描述') {
-        this.filterList = this.list.filter((item) =>
-          item.description.includes(keywords)
-        )
-      } else {
-        this.filterList = this.list.filter((item) =>
-          item[this.searchTarget].includes(keywords)
-        )
+      const size = {
+        width: this.imageInfo.rawW,
+        height: this.imageInfo.rawH
       }
-    },
-    /**
-     * 表格样式
-     */
-    tableRowClassName({ row, rowIndex }) {
-      row
-      if (rowIndex % 2) {
-        return 'highlight-row'
-      }
-      return ''
-    },
-    /**
-     * 前往标注页面
-     */
-    goToAnnotate(index) {
-      // 设置标注文本
-      this.$store.dispatch(
-        'annotate/setAnnotateText',
-        this.filterList[index].text
+      const xmin =
+        (parseInt(
+          this.allInfo[0].position.x.substring(
+            0,
+            this.allInfo[0].position.x.length - 1
+          )
+        ) *
+          size.width) /
+        100
+      console.log(xmin, '左上')
+      const ymin =
+        (parseInt(
+          this.allInfo[0].position.y.substring(
+            0,
+            this.allInfo[0].position.y.length - 1
+          )
+        ) *
+          size.height) /
+        100
+      console.log(ymin, '右手上')
+      const xmax =
+        (parseInt(
+          this.allInfo[0].position.x1.substring(
+            0,
+            this.allInfo[0].position.x1.length - 1
+          )
+        ) *
+          size.width) /
+        100
+      console.log(xmax, '右上')
+      const ymax =
+        (parseInt(
+          this.allInfo[0].position.y1.substring(
+            0,
+            this.allInfo[0].position.y1.length - 1
+          )
+        ) *
+          size.height) /
+        100
+      console.log(ymax, '左上')
+
+      console.log(
+        (xmax - xmin).toFixed(2),
+        (ymax - ymin).toFixed(2),
+        '计算矩形宽高'
       )
-      this.$router.push('/entityAnnotate')
     },
-    /**
-     * 编辑
-     * @param {object} row 操作当前行数据
-     */
-    handleEdit(index, row) {
-      this.showEditForm = true
-      this.listEditIndex = index
-      this.form.description = row.description
-      this.form.text = row.text
-      this.handleItemId = row.id
+
+    // 点击左右按钮显示更多
+    showMore(v) {
+      const el = this.$refs.picContainer
+
+      if (v === 'up') {
+        this.active++
+        if (this.active >= this.picTotal - 3) {
+          // 最后4张图
+          this.active = this.pics.length - 3
+          return
+        }
+        if (
+          this.pics.length - 3 === this.active &&
+          this.pics.length < this.picTotal
+        ) {
+          this.photoPageIndex++
+          this.getPhotos()
+          return
+        }
+      } else {
+        this.active--
+        if (this.active < 0) this.active = 0
+      }
+      el.style.transform =
+        'translateX(-' + (this.active / this.pics.length) * 100 + '%)'
     },
-    /**
-     * 更新数据
-     */
-    update() {
-      this.filterList[this.listEditIndex].description = this.form.description
-      this.filterList[this.listEditIndex].text = this.form.text
-      updateAnnotateTextInfoApi(this.filterList[this.listEditIndex])
-      this.list.forEach((item) => {
-        if (item.id === this.handleItemId) {
-          item.description = this.form.description
-          item.text = this.form.text
+
+    getPhotos() {
+      return this.$nextTick(() => {
+        const el = this.$refs.picContainer
+        if (el) {
+          el.style.width = el.scrollWidth + 'px'
+
+          el.style.transform =
+            'translateX(-' + (this.active / this.pics.length) * 100 + '%)'
         }
       })
-      this.showEditForm = false
     },
-    /**
-     * 删除文本
-     */
-    handleDelete(index) {
-      const id = this.filterList[index].id
-      deleteAnnotateTextApi(id)
-      this.filterList.splice(index, 1)
-      for (let i = 0; i < this.list.length; i++) {
-        if (this.list[i].id === id) {
-          this.list.splice(i, 1)
-          this.$store.dispatch('user/setAnnotateTextList', this.list)
-        }
-      }
+    /** 得到当前点击图片*/
+    activePic(v) {
+      this.currentInfo.currentBaseImage = v
+    },
+
+    handleChange(label) {
+      console.log(label)
     }
   }
 }
 </script>
-<style lang="scss">
-// 按钮组
-.button-group {
+
+<style lang="scss" scoped>
+.pics {
   width: 100%;
-  display: inline;
-  margin: 0 20px 20px 20px;
-
-  &-item {
-    margin-right: 20px;
-    display: inline-block;
-  }
-}
-
-// 清空按钮
-.clear {
-  float: right;
-  margin-bottom: 20px;
-}
-
-// 搜索框
-.search {
-  margin-bottom: 20px;
-
-  .el-select {
-    width: 150px;
-  }
-}
-
-// 表格样式
-.el-table .highlight-row {
-  background: #ebf0fa;
-}
-
-// 单行显示文本
-.single-line {
-  white-space: nowrap;
-  text-overflow: ellipsis;
   overflow: hidden;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .arrow {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-image: url('../../assets/404_images/404.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    &.arrow-right {
+      transform: rotate(180deg);
+    }
+  }
+  .pic-container {
+    // width: 1180px;
+    width: calc(100% - 30px);
+    height: 104px;
+    margin: 0px auto;
+    overflow: hidden;
+    .pic-box {
+      height: 100%;
+      // min-width: 1180px;
+      min-width: calc(100% - 50px);
+      transition: all 0.5s linear;
+      display: flex;
+      flex-wrap: nowrap;
+    }
+    .pic {
+      float: left;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      margin-right: 10px;
+      margin-left: 10px;
+      width: 185px;
+      height: 114px;
+      .info {
+        width: 183px;
+        height: 100%;
+        background-size: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+        position: relative;
+        &:hover {
+          border: 1px solid skyblue;
+        }
+      }
+    }
+  }
+}
+
+.tagList {
+  padding-left: 10px;
+  padding-bottom: 30px;
+  .title {
+    text-align: center;
+    font-weight: bold;
+  }
+  .handleButton {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .tags {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px ;
+    .el-icon-delete {
+      cursor: pointer;
+    }
+  }
 }
 </style>
+

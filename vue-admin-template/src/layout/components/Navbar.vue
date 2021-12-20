@@ -35,7 +35,7 @@
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
-
+import { setToken } from '@/utils/auth'
 export default {
   components: {
     Breadcrumb,
@@ -52,8 +52,11 @@ export default {
       this.$store.dispatch('app/toggleSideBar')
     },
     async logout() {
-      await this.$store.dispatch('user/logout')
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+      // await this.$store.dispatch('user/logout')
+      setToken(false)
+      localStorage.removeItem('valid')
+      localStorage.setItem('valid', false)
+      this.$router.push(`/login`)
     }
   }
 }

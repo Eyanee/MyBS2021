@@ -1,8 +1,24 @@
-export class deleteAnnotateTextApi {
+import request from '@/utils/request'
+
+export function login(data) {
+  return request({
+    url: '/vue-admin-template/user/login',
+    method: 'post',
+    data
+  })
 }
 
-export class updateAnnotateTextInfoApi {
+export function getInfo(token) {
+  return request({
+    url: '/vue-admin-template/user/info',
+    method: 'get',
+    params: { token }
+  })
 }
 
-export class removeAllAnnotateTextApi {
+export function logout() {
+  return request({
+    url: '/vue-admin-template/user/logout',
+    method: 'post'
+  })
 }

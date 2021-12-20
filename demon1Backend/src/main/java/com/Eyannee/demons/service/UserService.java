@@ -28,7 +28,7 @@ public class UserService {
             @Override
             public User mapRow(ResultSet rs, int rowNum) throws SQLException {
                 MyUser = new User();
-                MyUser.setId(rs.getInt("id"));
+                //MyUser.setId(rs.getInt("id"));
                 MyUser.setName(rs.getString("name"));
                 MyUser.setPassword(rs.getString("password"));
                 MyUser.setEmail(rs.getString("email"));
@@ -49,7 +49,7 @@ public class UserService {
             @Override
             public User mapRow(ResultSet rs, int rowNum) throws SQLException {
                 MyUser = new User();
-                MyUser.setId(rs.getInt("id"));
+                //MyUser.setId(rs.getInt("id"));
                 MyUser.setName(rs.getString("name"));
                 MyUser.setPassword(rs.getString("password"));
                 MyUser.setEmail(rs.getString("email"));
@@ -66,6 +66,16 @@ public class UserService {
         tUser=listAll();
         for(User temp:tUser){
             if(temp.getName().equals(Name)){
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean checkEmailValid(String Email){
+        List<User> tUser;
+        tUser=listAll();
+        for(User temp:tUser){
+            if(temp.getEmail().equals(Email)){
                 return true;
             }
         }
@@ -100,4 +110,23 @@ public class UserService {
         }
         else return false;
     }
+    public String insertUser(String UserName,String Password,String Email,String Phone){
+        if(checkUserValid(UserName)){
+            return "invalid User";
+        }
+        if(checkEmailValid(Email)){
+            return "invalid email";
+        }
+        //发送邮件并验证
+
+        //验证成功则插入新记录
+        String sql="insert into user values('"+UserName+"','"+Password+"','"+Email+"','"+Phone+"')";
+        int res;
+        res=jdbcTemplate.update(sql);
+        if(res>0){
+            return "success";
+        }
+        else return "failure";
+    }
+
 }
