@@ -1,27 +1,6 @@
 <template>
   <div>
     <el-card shadow="hover" class="mgb20" style="height:600px;">
-      <div class="video">
-        <el-upload
-          class="upload-demo"
-          drag
-          action="http://localhost:8080/uploadVideo"
-          :data="{username:videoInfo.username,filefolder:videoInfo.filefolder}"
-          multiple
-        >
-          <i class="el-icon-upload" />
-          <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-          <div slot="tip" class="el-upload__tip">只能上传mp4文件，且不超过50M</div>
-        </el-upload>
-      </div>
-      <el-container class="PicInfo">
-        <el-col :span="3" class="file_tips">
-          请输入需要上传的项目目录
-        </el-col>
-        <el-col :span="5" class="file">
-          <el-input v-model="videoInfo.filefolder" placeholder="请输入项目名" :disabled="false" />
-        </el-col>
-      </el-container>
       <div class="user-info">
         <el-upload
           ref="upload"
@@ -31,7 +10,7 @@
           :on-remove="handleRemove"
           :file-list="fileList"
           :auto-upload="false"
-          :data="{username:this.multipartFile.username,filename:this.multipartFile.filefolder}"
+          :data="{username:multipartFile.username,filename:multipartFile.filefolder}"
         >
           <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
           <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
@@ -39,7 +18,7 @@
         </el-upload>
       </div>
       <el-container class="PicInfo">
-        <el-col :span="3" class="file_tips">
+        <el-col :span="2" class="file_tips">
           请输入需要上传的项目目录
         </el-col>
         <el-col :span="5" class="file">

@@ -69,14 +69,14 @@ export const constantRoutes = [
       {
         path: 'table',
         name: 'Table',
-        component: () => import('@/views/table/index'),
-        meta: { title: 'Table', icon: 'table', requireAuth: true }
+        component: () => import('@/views/table/uploadVideo'),
+        meta: { title: 'uploadVideo', icon: 'table', requireAuth: true }
       },
       {
         path: 'tree',
         name: 'Tree',
-        component: () => import('@/views/tree/index'),
-        meta: { title: 'Tree', icon: 'tree' }
+        component: () => import('@/views/tree/uploadPics'),
+        meta: { title: 'uploadPics', icon: 'tree' }
       }
     ]
   },
