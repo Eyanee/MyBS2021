@@ -1,59 +1,31 @@
 <template>
   <div>
     <el-card shadow="hover" class="mgb20" style="height:500px;">
-      <div class="user-info">
-        <el-upload
-          action="#"
-          list-type="picture-card"
-          :auto-upload="false"
-        >
-          <i slot="default" class="el-icon-plus" />
-          <div slot="file" slot-scope="{file}">
-            <img
-              class="el-upload-list__item-thumbnail"
-              :src="file.url"
-              alt=""
-            >
-            <span class="el-upload-list__item-actions">
-              <span
-                class="el-upload-list__item-preview"
-                @click="handlePictureCardPreview(file)"
-              >
-                <i class="el-icon-zoom-in" />
-              </span>
-              <span
-                v-if="!disabled"
-                class="el-upload-list__item-delete"
-                @click="handleDownload(file)"
-              >
-                <i class="el-icon-download" />
-              </span>
-              <span
-                v-if="!disabled"
-                class="el-upload-list__item-delete"
-                @click="handleRemove(file)"
-              >
-                <i class="el-icon-delete" />
-              </span>
-            </span>
-          </div>
-        </el-upload>
-        <el-dialog :visible.sync="dialogVisible">
-          <img width="100%" :src="dialogImageUrl" alt="">
-        </el-dialog>
-        <div class="el-upload__text">点击上传</div>
-        <div slot="tip" class="el-upload__tip">只能上传 jpg/png 文件，且不超过 500kb</div>
-      </div>
       <div class="video">
         <el-upload
           class="upload-demo"
           drag
-          action="https://jsonplaceholder.typicode.com/posts/"
+          action="http://localhost:8080/uploadPics"
           multiple
         >
           <i class="el-icon-upload" />
           <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
           <div slot="tip" class="el-upload__tip">只能上传mp4文件，且不超过50M</div>
+        </el-upload>
+      </div>
+      <div class="user-info">
+        <el-upload
+          ref="upload"
+          class="upload-demo"
+          action="http://localhost:8080/uploadPics"
+          :on-preview="handlePreview"
+          :on-remove="handleRemove"
+          :file-list="fileList"
+          :auto-upload="false"
+        >
+          <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+          <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+          <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
         </el-upload>
       </div>
     </el-card>
@@ -65,10 +37,17 @@ export default {
     return {
       dialogImageUrl: '',
       dialogVisible: false,
-      disabled: false
+      disabled: false,
+      fileList: []
     }
   },
   methods: {
+    submitUpload() {
+      this.$refs.upload.submit()
+    },
+    handlePreview(file) {
+      console.log(file)
+    },
     handleRemove(file) {
       console.log(file)
     },
@@ -77,14 +56,24 @@ export default {
       this.dialogVisible = true
     },
     handleDownload(file) {
-      console.log(file)
+      console.log(file.raw)
+    },
+    uploadFile() {
+      console.log('111')
+      const fd = new FormData()
+      for (var i = 0; i < this.$refs.upload.uploadFiles.length; i++) {
+        console.log('222')
+        fd.set('filename', this.$refs.upload.uploadFiles[i])
+        this.$http.post('http://localhost:8080/uploadPics', fd, { emulateJSON: true }
+        )
+      }
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.video{
+.user-info{
   margin-top: 50px;
 }
 

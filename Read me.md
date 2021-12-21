@@ -36,7 +36,21 @@ https://element-plus.gitee.io/zh-CN/component/image.html#imageviewer-%E5%B1%9E%E
 
 
 
+关于图片上传的相关参考文档
 
+https://www.cnblogs.com/rogerwu/p/9274193.html
+
+https://www.jianshu.com/p/84b727a4b58a
+
+https://blog.csdn.net/weixin_41753664/article/details/116673917
+
+https://www.jianshu.com/p/902a80aaaadd
+
+
+
+https://my.oschina.net/u/4318033/blog/3335231
+
+https://www.mk2048.com/blog/blog_k22i0hhai1aa.html
 
 
 
@@ -45,7 +59,7 @@ https://element-plus.gitee.io/zh-CN/component/image.html#imageviewer-%E5%B1%9E%E
 - 先按照作业要求完成基本功能
 - 
 
-1. 实现用户注册、登录功能，需要密码在六字节以上、email的格式验证
+1. 实现用户注册、登录功能，需要密码在六字节以上、email的格式验证  （已完成
 2. 图片、视频上传
 3. 视频提取，自动提取
 4. 支持创建任务、发布任务
