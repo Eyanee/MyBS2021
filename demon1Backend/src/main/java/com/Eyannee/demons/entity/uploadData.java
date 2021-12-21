@@ -2,26 +2,19 @@ package com.Eyannee.demons.entity;
 
 
 public class uploadData {
-    private String imgType;
-    private String name;
-    private String imgSize;
+    private String username;
+    private String filename;
 
-    public String getImgType(){
-        return imgType;
+    public String getUsername(){
+        return username;
     }
-    public String getName(){
-        return name;
-    }
-    public String getimgSize(){
-        return imgSize;
+    public String getFilename(){
+        return filename;
     }
     public void setImgType( String t){
-        imgType=t;
+        username=t;
     }
     public void setName(String t){
-        name=t;
-    }
-    public void setImgSize(String t){
-        imgSize=t;
+        filename=t;
     }
 }
