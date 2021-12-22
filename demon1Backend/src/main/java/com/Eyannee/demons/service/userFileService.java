@@ -4,6 +4,7 @@ import com.Eyannee.demons.entity.Picture;
 import com.Eyannee.demons.entity.PublishInfo;
 import com.Eyannee.demons.entity.User;
 import com.Eyannee.demons.entity.Userfile;
+import org.apache.tomcat.util.buf.UEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -236,6 +237,21 @@ public class userFileService {
                 onePost.setDesInfo(rs.getString("desInfo"));
                 onePost.setReceivedPerson(rs.getString("receivePerson"));
                 onePost.setReceived(rs.getBoolean("isReceive"));
+                return onePost;
+            }
+        });
+        return allPost;
+    }
+
+    public List<Userfile> getUnPost(String username){
+        String sql="select filename from userfile where isPublish= false and username ='"+username+"'";
+        List<Userfile> allPost = jdbcTemplate.query(sql, new RowMapper<Userfile>() {
+            Userfile onePost = null;
+            @Override
+            public Userfile mapRow(ResultSet rs, int rowNum) throws SQLException {
+                onePost = new Userfile();
+                //MyUser.setId(rs.getInt("id"));
+                onePost.setFilename(rs.getString("filename"));
                 return onePost;
             }
         });

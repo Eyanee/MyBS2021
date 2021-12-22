@@ -109,20 +109,10 @@ export const constantRoutes = [
     component: Layout,
     children: [
       {
-        path: 'AllPost',
-        name: 'AllPost',
-        component: () => import('@/views/nested/menu2/allPost'),
-        meta: { title: 'AllPost', icon: 'task' }
-      }
-    ]
-  },i
-  {
-    path: 'external-link',
-    component: Layout,
-    children: [
-      {
-        path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
-        meta: { title: 'External Link', icon: 'link' }
+        path: 'ReleaseTask',
+        name: 'ReleaseTask',
+        component: () => import('@/views/nested/menu1/ReleaseTask'),
+        meta: { title: 'Release', icon: 'release' }
       }
     ]
   },

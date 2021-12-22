@@ -14,8 +14,8 @@ public class Userfile {
     public String getUsername(){
         return username;
     }
-    public String getFilename(){
-        return filename;
+    public String getFilename(String filename){
+        return this.filename;
     }
     public String getPicfilepath(){
         return picfilepath;

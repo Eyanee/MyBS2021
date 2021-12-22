@@ -2,6 +2,7 @@ package com.Eyannee.demons.Controller;
 
 
 import com.Eyannee.demons.entity.PublishInfo;
+import com.Eyannee.demons.entity.Userfile;
 import com.Eyannee.demons.entity.uploadData;
 import com.Eyannee.demons.service.picOp;
 import com.Eyannee.demons.service.userFileService;
@@ -169,6 +170,13 @@ public class uploadController {
         boolean res;
         res=myService.receivefile(username,filename,receivePerson);
         return res;
+    }
+
+    @RequestMapping(value = "/getUnpost" ,method= RequestMethod.GET)
+    public List<Userfile> getUnpost(String username){
+
+        List<Userfile> allUnpost=myService.getUnPost(username);
+        return allUnpost;
     }
 }
 
