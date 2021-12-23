@@ -19,7 +19,7 @@ public class userReceived {
         return  publisher;
     }
     public String getPicfilepath(){
-        return picfilepath;
+        return this.picfilepath;
     }
 //    public String getXmlfilepath(){
 //        return xmlfilepath;

@@ -13,6 +13,7 @@ import store from './store'
 import router from './router'
 import VueResource from 'vue-resource'
 Vue.use(VueResource)
+import qs from 'qs'
 
 import '@/icons' // icon
 import '@/permission' // permission control

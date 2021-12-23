@@ -2,7 +2,7 @@
   <div>
     <el-form :model="formInline">
       <el-form-item label="数据集：">
-        <el-select v-model="formInline.region" placeholder="选择数据集">
+        <el-select v-model="formInline.region" placeholder="选择数据集" @change="selectOne">
           <el-option
             v-for="item in dataList"
             :key="item"
@@ -10,11 +10,11 @@
             :value="item.code"
           />
         </el-select>
-        <el-button type="primary" style="margin-left: 20px">选择</el-button>
+        <el-button type="primary" style="margin-left: 20px" @click="changeDataset()">选择</el-button>
       </el-form-item>
 
       <el-form-item label="图片筛选：">
-        <el-radio-group v-model="formInline.radio" @change="handleChange">
+        <el-radio-group v-model="formInline.radio" @change="handleChange"> <!--这个功能暂不实现-->
           <el-radio-button label="全部" />
           <el-radio-button label="未标注" />
           <el-radio-button label="已标注" />
@@ -99,6 +99,7 @@
 <script>
 // import { AIMarker } from 'Vue-Picture-BD-Marker'
 import { AIMarker } from 'vue-picture-bd-marker'
+import axios from 'axios'
 export default {
   name: 'StagePicPage',
   components: { 'ui-marker': AIMarker },
@@ -108,16 +109,16 @@ export default {
         region: '',
         radio: '全部'
       },
-      dataList: [
-        { name: '安全帽', code: 1 },
-        { name: '火焰', code: 2 }
+      dataList: [ // 改成所有已领取数据集的名称
+        { name: '安全帽', code: 1, publisher: '' },
+        { name: '火焰', code: 2, publisher: '' }
       ],
-
+      dataset: 0,
       uuid: '0da9130',
       // 当前图片的信息，包含图片原本的高矮胖瘦尺寸
       currentInfo: {
-        currentBaseImage:
-          'https://seopic.699pic.com/photo/50041/3365.jpg_wh1200.jpg',
+        currentBaseImage: '',
+        // 'https://seopic.699pic.com/photo/50041/3365.jpg_wh1200.jpg',默认为第一张
         rawW: 0,
         rawH: 0,
         currentW: 0,
@@ -127,26 +128,8 @@ export default {
       },
 
       // *****************************
-      pics: [
-        {
-          cropImage: 'https://seopic.699pic.com/photo/50041/3365.jpg_wh1200.jpg'
-        },
-        {
-          cropImage: 'https://seopic.699pic.com/photo/50041/3365.jpg_wh1200.jpg'
-        },
-        {
-          cropImage: 'https://seopic.699pic.com/photo/50098/1015.jpg_wh1200.jpg'
-        },
-        {
-          cropImage: 'https://seopic.699pic.com/photo/50098/1015.jpg_wh1200.jpg'
-        },
-        {
-          cropImage: 'https://seopic.699pic.com/photo/50050/5027.jpg_wh1200.jpg'
-        },
-        {
-          cropImage: 'https://seopic.699pic.com/photo/50140/6207.jpg_wh1200.jpg'
-        }
-      ],
+      pics: [], // 默认加载第一个领取的数据集
+      filepath: [],
       active: 0, // 当前图片序号
       picTotal: 10, // 照片总数
 
@@ -162,7 +145,9 @@ export default {
         }
       ],
       allInfo: [], // 图片的矩形标记信息集合
-      imageInfo: [], // 存储图片原始信息
+      imageInfo: [
+        { picname: '', str: '' }
+      ], // 存储图片原始信息
 
       innerVisible: false,
       innerForm: {
@@ -178,9 +163,64 @@ export default {
   },
   mounted() {
     // this.onImageLoad()
+    this.forAllReceiveFile()
+    // this.forfilePics(0)
+    // for (var i = 0; i < this.imageInfo.length; i++) {
+    //   var temp = this.imageInfo[i].str
+    //   this.pics.push(temp)
+    // }
+    // // set默认为第一张
+    // this.currentInfo.currentBaseImage = this.pics[0]
+    // 应该至此就结束了初始化的部分
   },
   methods: {
     /** 记录图片当前的大小和原始大小 data={rawW,rawH,currentW,currentH} */
+    forAllReceiveFile() {
+      var user = localStorage.getItem('username')
+      axios.get('http://localhost:8080/getAllRnS', {
+        params: {
+          username: user
+        }
+      })
+        .then(function(reponse) {
+          var data = reponse.data
+          console.log(reponse)
+          for (var i = 0; i < data.length; i++) {
+            this.filepath.push(data.picfilepath)
+            const temp = { name: data.filename, code: i, publisher: data.publisher }
+            this.dataList.push(temp)
+          }
+        })
+    },
+    forfilePics(index) {
+      var _this = this
+      var user = _this.dataList[index].publisher
+      var file = _this.dataList[index].name
+
+      // 获取当前数据集的所有图片信息
+      axios.get('http://localhost:8080/getFilePicsData', {
+        username: user,
+        filename: file
+      })
+        .then(function(reponse) {
+          var data = reponse.data
+          console.log(data)
+          this.imageInfo.clear() // 清空一下
+          for (var i = 0; i < data.length; i++) {
+            var temp = { picname: data.picname, str: data.base64str }
+            this.imageInfo.push(temp)
+          }
+        })
+    },
+    changeDataset() {
+      console.log(i)
+    },
+    selectOne(event, item) {
+      var t = item.value()
+      this.dataset = t
+      console.log('item value is' + t)
+      // test后再决定后续的修改
+    },
     onImageLoad(data) {
       console.log(data)
       this.imageInfo = data
@@ -249,7 +289,7 @@ export default {
         ymin: [],
         ymax: [],
         tagName: [],
-        tag:[]
+        tag: []
       }
       for (let i = 0; i < this.allInfo.length; i++) {
         console.log(i)

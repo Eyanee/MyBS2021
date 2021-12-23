@@ -36,12 +36,15 @@ export default {
       dialogVisible: false,
       disabled: false,
       fileList: [],
-      multipartFile: { username: 'test', filefolder: 'default' },
+      multipartFile: { username: localStorage.getItem('username'), filefolder: 'default' },
       videoInfo: { username: 'default', filefolder: 'default' }
     }
   },
   methods: {
     submitUpload() {
+      var t = localStorage.getItem('username')
+      console.log(this.multipartFile.username)
+      this.multipartFile.filefolder
       this.$refs.upload.submit()
     },
     handlePreview(file) {

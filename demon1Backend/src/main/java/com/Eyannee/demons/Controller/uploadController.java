@@ -4,6 +4,7 @@ package com.Eyannee.demons.Controller;
 import com.Eyannee.demons.entity.PublishInfo;
 import com.Eyannee.demons.entity.Userfile;
 import com.Eyannee.demons.entity.uploadData;
+import com.Eyannee.demons.entity.userReceived;
 import com.Eyannee.demons.service.picOp;
 import com.Eyannee.demons.service.userFileService;
 import org.jetbrains.annotations.NotNull;
@@ -35,14 +36,14 @@ public class uploadController {
         String fileName = file.getOriginalFilename();
         String fileName1 = fileName.split("\\.")[1];
         //String name = UUIDUtils.getUUID(); // 随机的uuid
-        String folderPath = "D:/VueCode/MyBS2021/MyPics";
+        String folderPath = "D:/VueCode/MyBS2021/Myfiles";
         //检查filepath是否存在
 
         //如果文件夹不存在则创建
         //数据库创建新的userfile项目
-        String picfilepath=folderPath+"/"+username+"/"+filename;
+        String picfilepath=folderPath+"/"+username+"/"+filename+"/pics";
         String xmlfilepath=folderPath+"/"+username+"/"+filename+"/"+"xml";
-        String cocofilepath=folderPath+"/"+username+"/"+fileName+"/"+"coco";
+        String cocofilepath=folderPath+"/"+username+"/"+filename+"/"+"coco";
         File file1 =new File(picfilepath);
         if  (!file1.exists()  && !file1.isDirectory()){
             file1.mkdirs();
@@ -53,7 +54,7 @@ public class uploadController {
             file1.mkdirs();
         }
 
-        String filePath=folderPath+"/"+fileName;
+        String filePath=picfilepath+"/"+fileName;
         //检查文件是否存在
         File file2=new File(filePath);
         if(file2.exists()){
@@ -64,12 +65,12 @@ public class uploadController {
         String picname=fileName;
         int pos=fileName.lastIndexOf('.');
         String temp=fileName.substring(0,pos);
-        String xmlmarkpath=xmlfilepath+"/"+fileName+".xml";
-        String cocomarkpath=cocofilepath+"/"+fileName+".coco";
+        String xmlmarkpath=xmlfilepath+"/"+temp+".xml";
+        String cocomarkpath=cocofilepath+"/"+temp+".coco";
         myService.insertNewPic(username,filename,picname,filepath,xmlmarkpath,cocomarkpath);
 
 
-        File dest = new File(filePath);
+        File dest = new File(filepath);
         file.transferTo(dest);
         return "success";
     }
@@ -164,6 +165,14 @@ public class uploadController {
         //测试怎么返回
         return allPublishInfo;
     }
+    @RequestMapping(value = "/getAllRnS" ,method= RequestMethod.GET) //all receive but not submit
+    public List<userReceived> getAllRnS(String username){
+
+        List<userReceived> all = myService.getAllRns(username);
+
+        //测试怎么返回
+        return all;//全返回但只有一部分数据有用
+    }
 
     @RequestMapping(value = "/setReceive",method = RequestMethod.POST)
     public boolean setReceive(String username,String filename,String receivePerson){
@@ -172,11 +181,18 @@ public class uploadController {
         return res;
     }
 
-    @RequestMapping(value = "/getUnpost" ,method= RequestMethod.GET)
-    public List<Userfile> getUnpost(String username){
+    @RequestMapping(value = "/getUnpost")
+    public List<String> getUnpost(String username){
 
-        List<Userfile> allUnpost=myService.getUnPost(username);
+        List<String> allUnpost=myService.getUnPost(username);
         return allUnpost;
+    }
+
+    @RequestMapping(value = "/release",method = RequestMethod.POST)
+    public boolean ReleaseNew(String username,String filename,String des){
+        boolean res;
+        res=myService.setPublish(username,filename,des," ");
+        return res;
     }
 }
 

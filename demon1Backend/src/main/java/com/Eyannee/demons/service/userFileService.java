@@ -1,9 +1,6 @@
 package com.Eyannee.demons.service;
 
-import com.Eyannee.demons.entity.Picture;
-import com.Eyannee.demons.entity.PublishInfo;
-import com.Eyannee.demons.entity.User;
-import com.Eyannee.demons.entity.Userfile;
+import com.Eyannee.demons.entity.*;
 import org.apache.tomcat.util.buf.UEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 
 @Service
@@ -36,7 +34,7 @@ public class userFileService {
     public boolean insertNewPic(String username,String filename,
                                 String picname,String filepath,String xmlpath, String cocopath){
         String sql="insert into picture values('"+username+"','"+filename+"','"+picname
-                +"','"+filename+"',false,'"+xmlpath+"','"+cocopath+"')";
+                +"','"+filepath+"',false,'"+xmlpath+"','"+cocopath+"')";
 
         int res;
         res=jdbcTemplate.update(sql);
@@ -101,7 +99,7 @@ public class userFileService {
     }
 
     public boolean ALterPublisher(String username,String filename,String ReceivedPerson){
-        String sql="update userfile set isReceived = true,ReceivePerson='"+ ReceivedPerson+" 'where username= '"+username+"' and filename = '"
+        String sql="update userfile set isReceived = true where username= '"+username+"' and filename = '"
                 +filename+"'";
         int res;
         res=jdbcTemplate.update(sql);
@@ -135,14 +133,14 @@ public class userFileService {
     public boolean setPublish(String username,String filename, String desInfo,String ReceivedPerson){
         //两项记录
         String sql="insert into publishInfo values ('"+username+"','"+filename+"','"+
-                desInfo+"','"+ReceivedPerson+"',false";
+                desInfo+"','"+ReceivedPerson+"',false)";
         int res;
         res=jdbcTemplate.update(sql);
         if(res<=0){
             return false;
         }
         //setfilePublished
-        sql="update userfile set isPublished = true where username='"+username+"'and filename='"+filename+"'";
+        sql="update userfile set isPublish = true where username='"+username+"'and filename='"+filename+"'";
         res=jdbcTemplate.update(sql);
         if(res<=0){
             return false;
@@ -225,7 +223,7 @@ public class userFileService {
     }
 
     public List<PublishInfo> getAllPost(){
-        String sql="select * from publishinfo where isReceive = true";
+        String sql="select * from publishinfo where isReceive = false";
         List<PublishInfo> allPost = jdbcTemplate.query(sql, new RowMapper<PublishInfo>() {
             PublishInfo onePost = null;
             @Override
@@ -243,19 +241,62 @@ public class userFileService {
         return allPost;
     }
 
-    public List<Userfile> getUnPost(String username){
+    public List<String> getUnPost(String username){
         String sql="select filename from userfile where isPublish= false and username ='"+username+"'";
         List<Userfile> allPost = jdbcTemplate.query(sql, new RowMapper<Userfile>() {
-            Userfile onePost = null;
+            Userfile onePost = new Userfile();
             @Override
             public Userfile mapRow(ResultSet rs, int rowNum) throws SQLException {
                 onePost = new Userfile();
-                //MyUser.setId(rs.getInt("id"));
                 onePost.setFilename(rs.getString("filename"));
+                return onePost;
+            }
+        });
+        List<String> newList=new LinkedList<>();
+        for(Userfile temp:allPost){
+            newList.add(temp.getFilename());
+        }
+        return newList;
+    }
+
+    public List<String> forPicPath(String username,String filename){
+        String sql="select picfilepath from picture where username='"+username+"' and filename='"+filename+"'";
+        List<Picture> allPost = jdbcTemplate.query(sql, new RowMapper<Picture>() {
+            Picture onePost = new Picture();
+            @Override
+            public Picture mapRow(ResultSet rs, int rowNum) throws SQLException {
+                onePost.setFilepath(rs.getString("filepath"));
+                return onePost;
+            }
+        });
+        List<String> res = null;
+        for(Picture temp:allPost){
+            String s=temp.getFilepath();
+            res.add(s);
+        }
+
+        return res;
+    }
+
+    public List<userReceived> getAllRns(String username){
+        String sql="select * from userReceived where username ='"+
+                username +"' and isSubmit=false";
+
+        List<userReceived> allPost = jdbcTemplate.query(sql, new RowMapper<userReceived>() {
+            userReceived onePost = new userReceived();
+            @Override
+            public userReceived mapRow(ResultSet rs, int rowNum) throws SQLException {
+                onePost.setFilename(rs.getString("filename"));
+                onePost.setFinished(rs.getBoolean("isFinished"));
+                onePost.setSubmit(rs.getBoolean("isSubmit"));
+                onePost.setUsername(rs.getString("username"));
+                onePost.setPublisher(rs.getString("publishername"));
+                onePost.setPicfilepath(rs.getString("picfilepath"));
                 return onePost;
             }
         });
         return allPost;
     }
+
 
 }

@@ -62,15 +62,15 @@ export default {
       console.log(index, row)
       console.log(this.tableData[index])// 先看看可不可以输出
       var temp = this.tableData[index]
+      console.log(temp.username)
       this.$http.post('http://localhost:8080/setReceive', {
-        'username': temp.username,
-        'filename': temp.filename,
-        'receivePerson': localStorage.getItem('username')
-      })
+        username: temp.username,
+        filename: temp.filename,
+        receivePerson: localStorage.getItem('username')
+      }, { emulateJSON: true })
         .then(function(response) {
           console.log(response.data)
         })
-      this.reload()
     },
     getPosts() {
       var _this = this
