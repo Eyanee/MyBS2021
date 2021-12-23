@@ -63,20 +63,21 @@ export const constantRoutes = [
     path: '/example',
     component: Layout,
     redirect: '/example/table',
-    name: 'Example',
-    meta: { title: 'Example', icon: 'el-icon-s-help' },
+    name: 'Upload',
+    meta: { title: 'Upload', icon: 'upload' },
     children: [
       {
         path: 'table',
         name: 'Table',
         component: () => import('@/views/table/uploadVideo'),
-        meta: { title: 'uploadVideo', icon: 'table', requireAuth: true }
+        meta: { title: 'uploadVideo', icon: 'video', requireAuth: true }
       },
       {
         path: 'tree',
         name: 'Tree',
         component: () => import('@/views/tree/uploadPics'),
-        meta: { title: 'uploadPics', icon: 'tree' }
+        meta: { title: 'uploadPics', icon: 'uploadpics' +
+            '' }
       }
     ]
   },
@@ -87,7 +88,7 @@ export const constantRoutes = [
       {
         path: 'index',
         name: 'annotation',
-        component: () => import('@/views/form/index'),
+        component: () => import('@/views/form/annotation'),
         meta: { title: 'Annotation', icon: 'form' }
       }
     ]

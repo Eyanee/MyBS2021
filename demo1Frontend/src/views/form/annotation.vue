@@ -195,7 +195,7 @@ export default {
       this.innerForm.tag = ''
     },
     delTag(index) {
-      this.tags.splice(index, 1)
+      this.tags.splice(annotation, 1)
     },
     close() {
       this.innerVisible = false
@@ -209,7 +209,7 @@ export default {
       this.$refs[formName].validate(valid => {
         if (valid) {
           for (const index in this.tags) {
-            const item = this.tags[index]
+            const item = this.tags[annotation]
             if (
               item.tagName === this.innerForm.tagName ||
               item.tag === this.innerForm.tag
@@ -231,60 +231,86 @@ export default {
      */
     submitForm() {
       const data = this.$refs['aiPanel-editor'].getMarker().getData()
-
       this.allInfo = data
       console.log(this.allInfo)
-
+      console.log(this.allInfo.length, '个数')
       const size = {
         width: this.imageInfo.rawW,
         height: this.imageInfo.rawH
       }
-      const xmin =
-        (parseInt(
-          this.allInfo[0].position.x.substring(
-            0,
-            this.allInfo[0].position.x.length - 1
-          )
-        ) *
-          size.width) /
-        100
-      console.log(xmin, '左上')
-      const ymin =
-        (parseInt(
-          this.allInfo[0].position.y.substring(
-            0,
-            this.allInfo[0].position.y.length - 1
-          )
-        ) *
-          size.height) /
-        100
-      console.log(ymin, '右手上')
-      const xmax =
-        (parseInt(
-          this.allInfo[0].position.x1.substring(
-            0,
-            this.allInfo[0].position.x1.length - 1
-          )
-        ) *
-          size.width) /
-        100
-      console.log(xmax, '右上')
-      const ymax =
-        (parseInt(
-          this.allInfo[0].position.y1.substring(
-            0,
-            this.allInfo[0].position.y1.length - 1
-          )
-        ) *
-          size.height) /
-        100
-      console.log(ymax, '左上')
+      const Labels = {
+        filename: '',
+        username: '',
+        picname: '',
+        height: 0,
+        width: 0,
+        xmin: [],
+        xmax: [],
+        ymin: [],
+        ymax: [],
+        tagName: [],
+        tag:[]
+      }
+      for (let i = 0; i < this.allInfo.length; i++) {
+        console.log(i)
+        const xmin =
+          ((parseInt(this.allInfo[i].position.x
+            .substring(0, this.allInfo[i].position.x.length - 1)) * size.width) / 100)
+            .toFixed(0).toString()
+        console.log(xmin, '左上')
+        const ymin =
+          ((parseInt(this.allInfo[i].position.y
+            .substring(0, this.allInfo[i].position.y.length - 1)) * size.height) / 100)
+            .toFixed(0).toString()
+        console.log(ymin, '右手上')
+        const xmax =
+          ((parseInt(this.allInfo[i].position.x1
+            .substring(0, this.allInfo[i].position.x1.length - 1)) * size.width) / 100)
+            .toFixed(0).toString()
+        console.log(xmax, '右上')
+        const ymax =
+          ((parseInt(this.allInfo[i].position.y1
+            .substring(0, this.allInfo[i].position.y1.length - 1)) * size.height) / 100)
+            .toFixed(0).toString()
+        console.log(ymax, '左上')
 
-      console.log(
-        (xmax - xmin).toFixed(2),
-        (ymax - ymin).toFixed(2),
-        '计算矩形宽高'
-      )
+        const tagName = this.allInfo[i].tagName
+        const tag = tagName.allInfo[i].tag
+        console.log(tag)
+
+        Labels.xmin.push(xmin)
+        Labels.xmax.push(xmax)
+        Labels.ymin.push(ymin)
+        Labels.ymax.push(ymax)
+        Labels.tagName.push(tagName)
+        Labels.tag.push(tag)
+      }
+      Labels.width = size.width
+      Labels.height = size.height
+      Labels.filename = 'tests'
+      Labels.picname = 'tests'
+      Labels.username = localStorage.getItem('username')
+
+      this.$http.post('http://localhost:8080/annotation', {
+        username: Labels.username,
+        filename: Labels.filename,
+        picname: Labels.picname,
+        width: Labels.width,
+        height: Labels.height,
+        xmin: Labels.xmin,
+        xmax: Labels.xmax,
+        ymin: Labels.ymin,
+        ymax: Labels.ymax,
+        tagName: Labels.tagName,
+        tag: Labels.tag
+      }, { emulateJSON: true })
+        .then(function(response) {
+          console.log(response.data)
+        })
+        // eslint-disable-next-line handle-callback-err
+        .catch(function(error) {
+          this.loading = false
+        })
     },
 
     // 点击左右按钮显示更多

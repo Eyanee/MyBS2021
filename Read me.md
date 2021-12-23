@@ -41,3 +41,19 @@ https://my.oschina.net/u/4318033/blog/3335231
 https://www.mk2048.com/blog/blog_k22i0hhai1aa.html
 
 
+
+
+
+coco格式解析
+
+https://blog.csdn.net/qq_41375609/article/details/94737915
+
+如何使用java写json文件
+
+https://www.cnblogs.com/libo0125ok/p/7905665.html
+
+https://blog.csdn.net/qq_43809527/article/details/97496257
+
+
+
+![image-20211223120057547](C:\Users\86198\AppData\Roaming\Typora\typora-user-images\image-20211223120057547.png)
