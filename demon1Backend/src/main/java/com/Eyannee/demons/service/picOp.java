@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.Base64;
+import java.util.LinkedList;
 import java.util.List;
 
 @Service
@@ -44,7 +45,7 @@ public class picOp {
     public List<String> transferAndGet(List<String> filepath) throws IOException {
 
         String data = null;
-        List<String> allStr = null;
+        List<String> allStr = new LinkedList<>();
         for (String path : filepath) {
             if (new File(path).exists()) {
                 InputStream inputStream = null;

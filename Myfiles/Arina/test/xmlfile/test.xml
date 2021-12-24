@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<annotation>
+  <username>Arina</username>
+  <file>test</file>
+  <picname>test</picname>
+  <size>
+    <width>200</width>
+    <height>100</height>
+  </size>
+  <object>
+    <bndbox>
+      <xmin>
+        <46/>
+      </xmin>
+      <xmax>70</xmax>
+      <ymin>18</ymin>
+      <ymax>51</ymax>
+    </bndbox>
+  </object>
+  <object>
+    <bndbox>
+      <xmin>
+        <138/>
+      </xmin>
+      <xmax>154</xmax>
+      <ymin>16</ymin>
+      <ymax>71</ymax>
+    </bndbox>
+  </object>
+</annotation>

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 
 @RestController
@@ -38,7 +39,7 @@ public class PictureController {
     public List<upPicInfo> getFilePicsData(String username, String filename) throws IOException {
         String filepath;
         List<String> base64Str,allpicpath;
-        List<upPicInfo> all=null;
+        List<upPicInfo> all=new LinkedList<>();
         //向数据库查询路径，取出路径
         allpicpath=fileService.forPicPath(username,filename);
 

@@ -2,15 +2,15 @@
   <div>
     <el-form :model="formInline">
       <el-form-item label="数据集：">
-        <el-select v-model="formInline.region" placeholder="选择数据集" @change="selectOne">
+        <el-select v-model="values" placeholder="选择数据集" @change="selectOne">
           <el-option
             v-for="item in dataList"
-            :key="item"
+            :key="item.code"
             :label="item.name"
             :value="item.code"
           />
         </el-select>
-        <el-button type="primary" style="margin-left: 20px" @click="changeDataset()">选择</el-button>
+        <el-button type="primary" style="margin-left: 20px" @click="changeDataset">选择</el-button>
       </el-form-item>
 
       <el-form-item label="图片筛选：">
@@ -100,18 +100,21 @@
 // import { AIMarker } from 'Vue-Picture-BD-Marker'
 import { AIMarker } from 'vue-picture-bd-marker'
 import axios from 'axios'
+import qs from 'qs'
+
 export default {
   name: 'StagePicPage',
   components: { 'ui-marker': AIMarker },
   data() {
     return {
+      values: '',
+      currentDataList: 0,
       formInline: {
         region: '',
         radio: '全部'
       },
       dataList: [ // 改成所有已领取数据集的名称
-        { name: '安全帽', code: 1, publisher: '' },
-        { name: '火焰', code: 2, publisher: '' }
+        // { name: '火焰', code: 2, publisher: '' }
       ],
       dataset: 0,
       uuid: '0da9130',
@@ -119,10 +122,10 @@ export default {
       currentInfo: {
         currentBaseImage: '',
         // 'https://seopic.699pic.com/photo/50041/3365.jpg_wh1200.jpg',默认为第一张
-        rawW: 0,
-        rawH: 0,
-        currentW: 0,
-        currentH: 0,
+        rawW: 200,
+        rawH: 100,
+        currentW: 200,
+        currentH: 100,
         checked: false, // false表示当前图片还没有标记过
         data: [] // 表示图片矩形标记信息
       },
@@ -145,9 +148,7 @@ export default {
         }
       ],
       allInfo: [], // 图片的矩形标记信息集合
-      imageInfo: [
-        { picname: '', str: '' }
-      ], // 存储图片原始信息
+      imageInfo: [], // 存储图片原始信息
 
       innerVisible: false,
       innerForm: {
@@ -163,19 +164,12 @@ export default {
   },
   mounted() {
     // this.onImageLoad()
-    this.forAllReceiveFile()
-    // this.forfilePics(0)
-    // for (var i = 0; i < this.imageInfo.length; i++) {
-    //   var temp = this.imageInfo[i].str
-    //   this.pics.push(temp)
-    // }
-    // // set默认为第一张
-    // this.currentInfo.currentBaseImage = this.pics[0]
-    // 应该至此就结束了初始化的部分
+    this.Init()
   },
   methods: {
     /** 记录图片当前的大小和原始大小 data={rawW,rawH,currentW,currentH} */
-    forAllReceiveFile() {
+    Init() {
+      var _this = this
       var user = localStorage.getItem('username')
       axios.get('http://localhost:8080/getAllRnS', {
         params: {
@@ -186,40 +180,101 @@ export default {
           var data = reponse.data
           console.log(reponse)
           for (var i = 0; i < data.length; i++) {
-            this.filepath.push(data.picfilepath)
-            const temp = { name: data.filename, code: i, publisher: data.publisher }
-            this.dataList.push(temp)
+            var t = data[i].picfilepath
+            // console.log(t)
+            _this.filepath.push(t)
+            const temp = { name: data[i].filename, code: i + 1, publisher: data[i].publisher }
+            _this.dataList.push(temp)
           }
+          var filename = _this.dataList[0].name
+          var publisher = _this.dataList[0].publisher
+          console.log(_this.dataList[0], 'oo')
+          console.log(filename)
+          console.log(publisher)
+          // 这里复现一下第一步
+          axios.get('http://localhost:8080/getFilePicsData', {
+            params: {
+              username: publisher,
+              filename: filename
+            }
+          })
+            .then(function(reponse) {
+              var data = reponse.data
+              console.log(data)
+              // this.imageInfo = data
+              // console.log(this.imageInfo)
+              for (var i = 0; i < data.length; i++) {
+                var temp = { picname: data[i].filename, str: data[i].base64str, width: 200, height: 100 }
+                console.log('temp is', temp)
+                _this.imageInfo.push(temp)
+              }
+              // console.log(_this.imageInfo)
+              for (var j = 0; j < _this.imageInfo.length; j++) {
+                var m = _this.imageInfo[j].str
+                const t = { cropImage: m }
+                _this.pics.push(t)
+              }
+              console.log(_this.pics)
+
+              // 修改 currentinfo //其他信息先不传入
+              _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
+            })
         })
     },
-    forfilePics(index) {
+    changeDataset() {
+      //
       var _this = this
-      var user = _this.dataList[index].publisher
-      var file = _this.dataList[index].name
-
+      // eslint-disable-next-line no-unused-vars
+      var user, file
+      var t = _this.currentDataList
+      for (var i = 0; i < _this.dataList.length; i++) {
+        var m = _this.dataList[i].code
+        var x = _this.dataList[i].name
+        console.log('m is', m)
+        console.log(x)
+        console.log('t is', t)
+        if (m === t) {
+          console.log('matches code at ', i)
+          user = _this.dataList[i].publisher
+          file = _this.dataList[i].name
+          break
+        }
+      }
+      localStorage.setItem('dataListName',file)
+      localStorage.setItem('dataListPublisher',user)
+      //
       // 获取当前数据集的所有图片信息
+      console.log('username is', user)
+      console.log('filename is', file)
       axios.get('http://localhost:8080/getFilePicsData', {
-        username: user,
-        filename: file
+        params: {
+          username: user,
+          filename: file
+        }
       })
         .then(function(reponse) {
           var data = reponse.data
           console.log(data)
-          this.imageInfo.clear() // 清空一下
+          _this.imageInfo = []// 清空一下
+          // console.log(this.imageInfo)
           for (var i = 0; i < data.length; i++) {
-            var temp = { picname: data.picname, str: data.base64str }
-            this.imageInfo.push(temp)
+            var temp = { picname: data[i].filename, str: data[i].base64str }
+            _this.imageInfo.push(temp)
+          }
+          // console.log(_this.imageInfo)
+          _this.pics = [] // 也清空一下
+          for (var j = 0; j < _this.imageInfo.length; j++) {
+            var m = _this.imageInfo[j].str
+            const t = { cropImage: m }
+            _this.pics.push(t)
           }
         })
+      //
     },
-    changeDataset() {
-      console.log(i)
-    },
-    selectOne(event, item) {
-      var t = item.value()
-      this.dataset = t
-      console.log('item value is' + t)
-      // test后再决定后续的修改
+    selectOne(value) {
+      console.log('ttttt', value)
+      // 存储当前的选择
+      this.currentDataList = value
     },
     onImageLoad(data) {
       console.log(data)
@@ -249,7 +304,7 @@ export default {
       this.$refs[formName].validate(valid => {
         if (valid) {
           for (const index in this.tags) {
-            const item = this.tags[annotation]
+            const item = this.tags[index]
             if (
               item.tagName === this.innerForm.tagName ||
               item.tag === this.innerForm.tag
@@ -273,21 +328,22 @@ export default {
       const data = this.$refs['aiPanel-editor'].getMarker().getData()
       this.allInfo = data
       console.log(this.allInfo)
-      console.log(this.allInfo.length, '个数')
+      console.log(this.currentInfo, 'currentInfo')
       const size = {
-        width: this.imageInfo.rawW,
-        height: this.imageInfo.rawH
+        width: this.currentInfo.rawW ,//
+        height: this.currentInfo.rawH
       }
+      console.log('size is', size)
       const Labels = {
         filename: '',
         username: '',
         picname: '',
         height: 0,
         width: 0,
-        xmin: [],
-        xmax: [],
-        ymin: [],
-        ymax: [],
+        Xmin: [],
+        Xmax: [],
+        Ymin: [],
+        Ymax: [],
         tagName: [],
         tag: []
       }
@@ -313,37 +369,53 @@ export default {
             .substring(0, this.allInfo[i].position.y1.length - 1)) * size.height) / 100)
             .toFixed(0).toString()
         console.log(ymax, '左上')
-
+        console.log('here1')
         const tagName = this.allInfo[i].tagName
-        const tag = tagName.allInfo[i].tag
-        console.log(tag)
-
-        Labels.xmin.push(xmin)
-        Labels.xmax.push(xmax)
-        Labels.ymin.push(ymin)
-        Labels.ymax.push(ymax)
+        console.log('here2')
+        const tag = this.allInfo[i].tag
+        console.log(tagName)
+        console.log('here3')
+        Labels.Xmin.push(xmin)
+        Labels.Xmax.push(xmax)
+        Labels.Ymin.push(ymin)
+        Labels.Ymax.push(ymax)
         Labels.tagName.push(tagName)
         Labels.tag.push(tag)
       }
+      var a=localStorage.getItem('dataListName')
+      var b=localStorage.getItem('dataListPublisher')
       Labels.width = size.width
       Labels.height = size.height
-      Labels.filename = 'tests'
-      Labels.picname = 'tests'
+      Labels.filename = 'test'
+      Labels.picname =  'test'//注意修改
       Labels.username = localStorage.getItem('username')
-
+      let obj = {
+        username: Labels.username,
+        filename: Labels.filename,
+        picname: Labels.picname,
+        height: Labels.height,
+        width: Labels.width,
+        xmin: Labels.Xmin,
+        xmax: Labels.Xmax,
+        ymin: Labels.Ymin,
+        ymax: Labels.Ymax,
+        tagName: Labels.tagName,
+        tag: Labels.tag
+      }
+      qs.stringify(obj)
       this.$http.post('http://localhost:8080/annotation', {
         username: Labels.username,
         filename: Labels.filename,
         picname: Labels.picname,
-        width: Labels.width,
         height: Labels.height,
-        xmin: Labels.xmin,
-        xmax: Labels.xmax,
-        ymin: Labels.ymin,
-        ymax: Labels.ymax,
+        width: Labels.width,
+        xmin: Labels.Xmin,
+        xmax: Labels.Xmax,
+        ymin: Labels.Ymin,
+        ymax: Labels.Ymax,
         tagName: Labels.tagName,
         tag: Labels.tag
-      }, { emulateJSON: true })
+      },{ emulateJSON: true })
         .then(function(response) {
           console.log(response.data)
         })
@@ -411,6 +483,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+
   .arrow {
     width: 20px;
     height: 20px;
@@ -418,16 +491,19 @@ export default {
     background-image: url('../../assets/404_images/404.png');
     background-repeat: no-repeat;
     background-size: contain;
+
     &.arrow-right {
       transform: rotate(180deg);
     }
   }
+
   .pic-container {
     // width: 1180px;
     width: calc(100% - 30px);
     height: 104px;
     margin: 0px auto;
     overflow: hidden;
+
     .pic-box {
       height: 100%;
       // min-width: 1180px;
@@ -436,6 +512,7 @@ export default {
       display: flex;
       flex-wrap: nowrap;
     }
+
     .pic {
       float: left;
       border: 1px solid #ccc;
@@ -444,6 +521,7 @@ export default {
       margin-left: 10px;
       width: 185px;
       height: 114px;
+
       .info {
         width: 183px;
         height: 100%;
@@ -451,6 +529,7 @@ export default {
         background-repeat: no-repeat;
         background-position: center;
         position: relative;
+
         &:hover {
           border: 1px solid skyblue;
         }
@@ -462,19 +541,23 @@ export default {
 .tagList {
   padding-left: 10px;
   padding-bottom: 30px;
+
   .title {
     text-align: center;
     font-weight: bold;
   }
+
   .handleButton {
     width: 100%;
     margin-bottom: 10px;
   }
+
   .tags {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px ;
+    padding: 10px;
+
     .el-icon-delete {
       cursor: pointer;
     }

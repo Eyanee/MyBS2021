@@ -260,16 +260,22 @@ public class userFileService {
     }
 
     public List<String> forPicPath(String username,String filename){
-        String sql="select picfilepath from picture where username='"+username+"' and filename='"+filename+"'";
+        String sql="select * from picture where username='"+username+"' and filename='"+filename+"'";
         List<Picture> allPost = jdbcTemplate.query(sql, new RowMapper<Picture>() {
-            Picture onePost = new Picture();
             @Override
             public Picture mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Picture onePost = new Picture();
                 onePost.setFilepath(rs.getString("filepath"));
+                onePost.setUsername(rs.getString("username"));
+                onePost.setFilename(rs.getString("filename"));
+                onePost.setPicname(rs.getString("picname"));
+                onePost.setMarked(rs.getBoolean("isMarked"));
+                onePost.setXmlpath(rs.getString("xmlmarkpath"));
+                onePost.setCocopath(rs.getString("cocomarkpath"));
                 return onePost;
             }
         });
-        List<String> res = null;
+        List<String> res = new LinkedList<>();
         for(Picture temp:allPost){
             String s=temp.getFilepath();
             res.add(s);

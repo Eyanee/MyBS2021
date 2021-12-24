@@ -2,9 +2,13 @@ package com.Eyannee.demons.Controller;
 
 import com.Eyannee.demons.service.XmlFile;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 public class AnnotationController {
@@ -12,10 +16,14 @@ public class AnnotationController {
     @Autowired
     private XmlFile myXmlService = new XmlFile();
 
-    public boolean getAnnotationData(String username,String filename,String picname,
-                                     String height,String width,String[] xmin,String[] xmax,String[] ymin,
-                                     String[] ymax,String[] tagName,String[] tag) throws IOException {
+    @RequestMapping(value = "/annotation",method = RequestMethod.POST)
+    public boolean getAnnotationData(String username, String filename, String picname,
+                                     String height, String width,@RequestParam("xmin[]")String[] xmin,
+                                     @RequestParam("xmax[]")String[] xmax, @RequestParam("ymin[]")String[] ymin,
+                                     @RequestParam("ymax[]")String[] ymax, @RequestParam("tagName[]")String[] tagName,
+                                     @RequestParam("tag[]")String[] tag) throws IOException {
         boolean res;
+        System.out.println("whatever");
         res=myXmlService.writeXML(username,filename,picname,height,width,xmin,xmax,ymin,ymax,tagName);
         if(!res){
             System.out.println("write xml failed!");

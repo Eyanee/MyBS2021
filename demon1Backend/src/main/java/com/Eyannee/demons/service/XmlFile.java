@@ -11,6 +11,7 @@ import net.sf.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -26,7 +27,7 @@ public class XmlFile {
         Element user=annotation.addElement("username").addText(username);
         Element file=annotation.addElement("file").addText(filename);
         Element pic=annotation.addElement("picname").addText(picname);
-        Element size=annotation.addElement("szie");
+        Element size=annotation.addElement("size");
         Element thiswidth=size.addElement("width").addText(width);
         Element thisheight=size.addElement("height").addText(height);
         for(int i=0;i<tags.length;i++){
@@ -55,7 +56,7 @@ public class XmlFile {
         File file2=new File(xmlfilepath);
         XMLWriter writer = new XMLWriter(new FileOutputStream(file2), format);
 
-        writer.write(doc);
+        writer.write(document);
         System.out.println("dom4j CreateDom4j success!");
         return true;
     }
@@ -83,11 +84,13 @@ public class XmlFile {
         }
 
         //写categories字段
-        Map<Integer,String>myTag = null;
+        Map<Integer,String>myTag = new HashMap<>();
         Integer no;
         String text;
         for(int i=0;i<tags.length;i++){
-            no=Integer.valueOf(tags[i]);
+            int pos=tags[i].indexOf('x');
+            String t=tags[i].substring(pos+1);
+            no=Integer.valueOf(t,16);
             text=tagName[i];
             myTag.put(no,text);
         }

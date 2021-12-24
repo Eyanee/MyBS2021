@@ -11,10 +11,10 @@ public class Picture {
     private boolean isMarked;
 
     public String getUsername(){
-        return username;
+        return this.username;
     }
     public String getFilename(){
-        return filename;
+        return this.filename;
     }
     public String getPicname(){
         return picname;
@@ -42,7 +42,7 @@ public class Picture {
         picname=s;
     }
     public void setFilepath(String s){
-        filename=s;
+        filepath=s;
     }
     public void setXmlpath(String s){
         xmlpath=s;
