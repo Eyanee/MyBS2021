@@ -203,12 +203,12 @@ export default {
               console.log(data)
               // this.imageInfo = data
               // console.log(this.imageInfo)
-              for (var i = 0; i < data.length; i++) {
-                var temp = { picname: data[i].filename, str: data[i].base64str, width: 200, height: 100 }
+              for (var i = 0; i < data.length; i++) { // 在这个地方传入mark的 信息
+                var temp = { picname: data[i].filename, str: data[i].base64str, width: 200, height: 100, isMark: data[i].mark }
                 console.log('temp is', temp)
                 _this.imageInfo.push(temp)
               }
-              // console.log(_this.imageInfo)
+              // console.log(_this.imageInfo) //默认set所有图片
               for (var j = 0; j < _this.imageInfo.length; j++) {
                 var m = _this.imageInfo[j].str
                 const t = { cropImage: m }
@@ -240,8 +240,8 @@ export default {
           break
         }
       }
-      localStorage.setItem('dataListName',file)
-      localStorage.setItem('dataListPublisher',user)
+      localStorage.setItem('dataListName', file)
+      localStorage.setItem('dataListPublisher', user)
       //
       // 获取当前数据集的所有图片信息
       console.log('username is', user)
@@ -257,8 +257,8 @@ export default {
           console.log(data)
           _this.imageInfo = []// 清空一下
           // console.log(this.imageInfo)
-          for (var i = 0; i < data.length; i++) {
-            var temp = { picname: data[i].filename, str: data[i].base64str }
+          for (var i = 0; i < data.length; i++) { // 这个地方也有修改
+            var temp = { picname: data[i].filename, str: data[i].base64str, isMark: data[i].mark }
             _this.imageInfo.push(temp)
           }
           // console.log(_this.imageInfo)
@@ -268,8 +268,47 @@ export default {
             const t = { cropImage: m }
             _this.pics.push(t)
           }
+          // 修改 currentinfo //其他信息先不传入
+          _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
         })
       //
+    },
+    notMark() {
+      var _this = this
+      _this.pics = [] // 清空一下
+      for (var j = 0; j < _this.imageInfo.length; j++) {
+        if (_this.imageInfo.isMark === false) {
+          var m = _this.imageInfo[j].str
+          const t = { cropImage: m }
+          _this.pics.push(t)
+        }
+      }
+      // 修改 currentinfo //其他信息先不传入
+      _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
+    },
+    marked() {
+      var _this = this
+      _this.pics = [] // 清空一下
+      for (var j = 0; j < _this.imageInfo.length; j++) {
+        if (_this.imageInfo.isMark === true) {
+          var m = _this.imageInfo[j].str
+          const t = { cropImage: m }
+          _this.pics.push(t)
+        }
+      }
+      // 修改 currentinfo //其他信息先不传入
+      _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
+    },
+    all() {
+      var _this = this
+      _this.pics = [] // 清空一下
+      for (var j = 0; j < _this.imageInfo.length; j++) {
+        var m = _this.imageInfo[j].str
+        const t = { cropImage: m }
+        _this.pics.push(t)
+      }
+      // 修改 currentinfo //其他信息先不传入
+      _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
     },
     selectOne(value) {
       console.log('ttttt', value)
@@ -330,7 +369,7 @@ export default {
       console.log(this.allInfo)
       console.log(this.currentInfo, 'currentInfo')
       const size = {
-        width: this.currentInfo.rawW ,//
+        width: this.currentInfo.rawW, //
         height: this.currentInfo.rawH
       }
       console.log('size is', size)
@@ -382,14 +421,14 @@ export default {
         Labels.tagName.push(tagName)
         Labels.tag.push(tag)
       }
-      var a=localStorage.getItem('dataListName')
-      var b=localStorage.getItem('dataListPublisher')
+      var a = localStorage.getItem('dataListName')
+      var b = localStorage.getItem('dataListPublisher')
       Labels.width = size.width
       Labels.height = size.height
       Labels.filename = 'test'
-      Labels.picname =  'test'//注意修改
+      Labels.picname = 'test'// 注意修改
       Labels.username = localStorage.getItem('username')
-      let obj = {
+      const obj = {
         username: Labels.username,
         filename: Labels.filename,
         picname: Labels.picname,
@@ -403,7 +442,7 @@ export default {
         tag: Labels.tag
       }
       qs.stringify(obj)
-      this.$http.post('http://localhost:8080/annotation', {
+      this.$http.post('http://localhost:8080/annotation', { // 检查是否修改mark变量
         username: Labels.username,
         filename: Labels.filename,
         picname: Labels.picname,
@@ -415,7 +454,7 @@ export default {
         ymax: Labels.Ymax,
         tagName: Labels.tagName,
         tag: Labels.tag
-      },{ emulateJSON: true })
+      }, { emulateJSON: true })
         .then(function(response) {
           console.log(response.data)
         })
@@ -469,7 +508,17 @@ export default {
     },
 
     handleChange(label) {
-      console.log(label)
+      console.log(label, 'label is')
+      if (label === '全部') {
+        console.log('1')
+        this.all()
+      } else if (label === '已标注') {
+        console.log('3')
+        this.marked()
+      } else {
+        console.log('2')
+        this.notMark()
+      }
     }
   }
 }

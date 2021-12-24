@@ -36,16 +36,28 @@ public class LoginController {
         res=myServer.newUser(t);
         return res;
     }
-    @RequestMapping("/foremail")
+    @RequestMapping(value = "/getEmail" ,method = RequestMethod.GET)
     public String AskForEmail(String username){
         String temp;
         temp=myServer.selectEmail(username);
         return temp;
     }
-    @RequestMapping("/Edit")
-    public boolean UpdateInfo(String UserName,String Password,String Email){
-        boolean res;
-        res=myServer.updateUser(UserName,Password,Email);
+    @RequestMapping("/updateInfo")
+    public User UpdateInfo(String UserName,String Password,String Email,String PreviousName){
+        User res=new User();
+        res=myServer.updateUser(UserName,Password,Email,PreviousName);
+        return res;
+    }
+
+    @RequestMapping(value = "/getNum",method = RequestMethod.GET)
+    public Integer[] getNum(String username){
+        Integer[] res=new Integer[3];
+        //查询已上传个数
+        res[0]=myServer.getPicNum(username);
+        //查询已接受任务个数
+        res[1]=myServer.getReceiveNum(username);
+        //查询已发布的个数
+        res[2]=myServer.getReleaseNum(username);
         return res;
     }
 }

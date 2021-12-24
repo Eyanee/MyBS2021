@@ -1,7 +1,6 @@
 package com.Eyannee.demons.service;
 
-import com.Eyannee.demons.entity.Book;
-import com.Eyannee.demons.entity.User;
+import com.Eyannee.demons.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -103,14 +102,59 @@ public class UserService {
         System.out.println("email is "+email);
         return email;
     }
-    public boolean updateUser(String UserName,String Password,String Email){
-        String sql="update user set email='"+Email+"', password='"+Password+"'where name='"+UserName+"'";
-        int res;
-        res=jdbcTemplate.update(sql);
-        if(res>0){
-            return true;
+    public User updateUser(String username,String password,String email,String previousName){
+        //先检查是否冲突
+        String sql="select * from user where name <> '"+ previousName+"'";
+        List<User> userList = jdbcTemplate.query(sql, new RowMapper<User>() {
+            User MyUser = null;
+            @Override
+            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                MyUser = new User();
+                MyUser.setName(rs.getString("name"));
+                MyUser.setPassword(rs.getString("password"));
+                MyUser.setEmail(rs.getString("email"));
+                MyUser.setPhone(rs.getString("phone"));
+                return MyUser;
+            }
+        });
+        boolean res=true;
+        for(User temp:userList){
+            if(temp.getName().equals(username)){
+                res=false;
+                break;
+            }
+            if(temp.getEmail().equals(email)){
+                res=false;
+                break;
+            }
         }
-        else return false;
+        User newUser=new User();
+        if(res==true){
+            sql="update user set name='"+username+"',email='"+email+"',password='"+password+"' where name ='"+
+                    previousName+"'";
+            jdbcTemplate.update(sql);
+            newUser.setEmail(email);
+            newUser.setPassword(password);
+            newUser.setName(username);
+            newUser.setId(0);
+            newUser.setPhone("1245");//set default值以防传不进去
+            return newUser;
+        }
+        sql="select * from user where name='" + previousName+"'";
+        List<User> oldUser = jdbcTemplate.query(sql, new RowMapper<User>() {
+            User MyUser = null;
+            @Override
+            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                MyUser = new User();
+                MyUser.setName(rs.getString("name"));
+                MyUser.setPassword(rs.getString("password"));
+                MyUser.setEmail(rs.getString("email"));
+                MyUser.setPhone(rs.getString("phone"));
+                return MyUser;
+            }
+        });
+        newUser=oldUser.get(0);
+        return newUser;
     }
 
     //检查邮箱格式
@@ -132,4 +176,48 @@ public class UserService {
         else return false;
     }
 
+    public Integer getPicNum(String username){
+        String sql="select * from picture where username= '"+username+"'";
+        List<Picture> allPics = jdbcTemplate.query(sql, new RowMapper<Picture>() {
+            Picture MyPic = null;
+            @Override
+            public Picture mapRow(ResultSet rs, int rowNum) throws SQLException {
+                MyPic = new Picture();
+                MyPic.setUsername(rs.getString("username"));
+                return MyPic;
+            }
+        });
+        Integer res=allPics.size();
+        return res;
+    }
+
+    public Integer getReceiveNum(String username){
+        String sql="select * from userReceived where username='"+username+"'";
+        List<userReceived> allReceievd = jdbcTemplate.query(sql, new RowMapper<userReceived>() {
+            userReceived MyReceived = null;
+            @Override
+            public userReceived mapRow(ResultSet rs, int rowNum) throws SQLException {
+                MyReceived = new userReceived();
+                MyReceived.setUsername(rs.getString("username"));
+                return MyReceived;
+            }
+        });
+        Integer res=allReceievd.size();
+        return res;
+    }
+
+    public Integer getReleaseNum(String username){
+        String sql="select * from publishInfo where username='"+username+"'";
+        List<PublishInfo> allInfo = jdbcTemplate.query(sql, new RowMapper<PublishInfo>() {
+            PublishInfo MyInfo = null;
+            @Override
+            public PublishInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
+                MyInfo = new PublishInfo();
+                MyInfo.setUsername(rs.getString("username"));
+                return MyInfo;
+            }
+        });
+        Integer res=allInfo.size();
+        return res;
+    }
 }

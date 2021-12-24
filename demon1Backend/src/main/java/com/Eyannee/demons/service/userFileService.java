@@ -148,7 +148,7 @@ public class userFileService {
         return true;
     }
 
-    public boolean setMarked(String username, String filename, String picname,String xmlpath,String cocopath){
+    public boolean setMarked(String username, String filename, String picname){
         String sql="update picture set isMarked=true where username='"+username+"' and filename ='"+filename
                 +"'and picname ='"+picname+"'";
         int res;
@@ -281,6 +281,34 @@ public class userFileService {
             res.add(s);
         }
 
+        return res;
+    }
+
+    public List<upPicInfo> forupInfo(String username,String filename){
+        String sql="select * from picture where username='"+username+"' and filename='"+filename+"'";
+        List<Picture> allPost = jdbcTemplate.query(sql, new RowMapper<Picture>() {
+            @Override
+            public Picture mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Picture onePost = new Picture();
+                onePost.setFilepath(rs.getString("filepath"));
+                onePost.setUsername(rs.getString("username"));
+                onePost.setFilename(rs.getString("filename"));
+                onePost.setPicname(rs.getString("picname"));
+                onePost.setMarked(rs.getBoolean("isMarked"));
+                onePost.setXmlpath(rs.getString("xmlmarkpath"));
+                onePost.setCocopath(rs.getString("cocomarkpath"));
+                return onePost;
+            }
+        });
+        List<upPicInfo> res = new LinkedList<>();
+        for(Picture temp:allPost){
+            upPicInfo one=new upPicInfo();
+            String s=temp.getFilepath();
+            boolean t=temp.getIsMarked();
+            one.setMarked(t);
+            one.setFilepath(s);
+            res.add(one);
+        }
         return res;
     }
 

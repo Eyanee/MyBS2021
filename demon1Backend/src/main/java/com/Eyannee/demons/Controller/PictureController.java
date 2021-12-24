@@ -1,5 +1,6 @@
 package com.Eyannee.demons.Controller;
 
+import com.Eyannee.demons.entity.Picture;
 import com.Eyannee.demons.entity.upPicInfo;
 import com.Eyannee.demons.service.picOp;
 import com.Eyannee.demons.service.userFileService;
@@ -38,21 +39,24 @@ public class PictureController {
     @RequestMapping(value = "/getFilePicsData" ,method= RequestMethod.GET)
     public List<upPicInfo> getFilePicsData(String username, String filename) throws IOException {
         String filepath;
-        List<String> base64Str,allpicpath;
+        List<String> base64Str;
+        List<String>allpath = new LinkedList<>();
+        List<upPicInfo>allpicpath;
         List<upPicInfo> all=new LinkedList<>();
-        //向数据库查询路径，取出路径
-        allpicpath=fileService.forPicPath(username,filename);
-
-        //传入路径，查询图片并整合为base64字符串
-        base64Str=picService.transferAndGet(allpicpath);
+        //向数据库查询路径，取出路径,同时要取出mark信息
+        allpicpath=fileService.forupInfo(username,filename);
         for(int i=0;i<allpicpath.size();i++){
-            upPicInfo t=new upPicInfo();
-            String tStr= allpicpath.get(i);
+            String t= allpicpath.get(i).getFilepath();
+            allpath.add(t);
+        }
+        //传入路径，查询图片并整合为base64字符串
+        base64Str=picService.transferAndGet(allpath);
+        for(int i=0;i<allpicpath.size();i++){
+            String tStr= allpicpath.get(i).getFilepath();
             int pos=tStr.lastIndexOf("/");
             String thisFilename=tStr.substring(pos+1);
-            t.setFilename(thisFilename);
-            t.setBase64str(base64Str.get(i));
-            all.add(t);
+            allpicpath.get(i).setFilename(thisFilename);
+            allpicpath.get(i).setBase64str(base64Str.get(i));
         }
         return all;
     }

@@ -1,6 +1,7 @@
 package com.Eyannee.demons.Controller;
 
 import com.Eyannee.demons.service.XmlFile;
+import com.Eyannee.demons.service.userFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,6 +16,8 @@ public class AnnotationController {
 
     @Autowired
     private XmlFile myXmlService = new XmlFile();
+    @Autowired
+    private userFileService picService=new userFileService();
 
     @RequestMapping(value = "/annotation",method = RequestMethod.POST)
     public boolean getAnnotationData(String username, String filename, String picname,
@@ -22,6 +25,9 @@ public class AnnotationController {
                                      @RequestParam("xmax[]")String[] xmax, @RequestParam("ymin[]")String[] ymin,
                                      @RequestParam("ymax[]")String[] ymax, @RequestParam("tagName[]")String[] tagName,
                                      @RequestParam("tag[]")String[] tag) throws IOException {
+        //先更新数据库相关信息
+        picService.setMarked(username,filename,picname);
+        //写文件操作
         boolean res;
         System.out.println("whatever");
         res=myXmlService.writeXML(username,filename,picname,height,width,xmin,xmax,ymin,ymax,tagName);

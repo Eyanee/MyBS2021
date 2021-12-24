@@ -117,6 +117,18 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/SubmitPost',
+    component: Layout,
+    children: [
+      {
+        path: 'AllPost',
+        name: 'AllPost',
+        component: () => import('@/views/nested/menu3/SubmitTask'),
+        meta: { title: 'SubmitTask', icon: 'submit' }
+      }
+    ]
+  },
 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
