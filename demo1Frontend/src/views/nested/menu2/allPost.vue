@@ -60,6 +60,7 @@ export default {
   methods: {
     handleReceive(index, row) {
       console.log(index, row)
+      var _this=this
       console.log(this.tableData[index])// 先看看可不可以输出
       var temp = this.tableData[index]
       console.log(temp.username)
@@ -70,6 +71,7 @@ export default {
       }, { emulateJSON: true })
         .then(function(response) {
           console.log(response.data)
+          _this.getPosts()
         })
     },
     getPosts() {

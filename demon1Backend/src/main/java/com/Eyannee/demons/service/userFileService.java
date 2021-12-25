@@ -21,6 +21,21 @@ public class userFileService {
     //插入新的userfile项
     public boolean insertUserFile(String username,String filename,
                                   String picfilepath,String xmlfilepath,String cocofilepath){
+        String tSql="select * from userfile where username='"+username+"' and filename='"+filename+"'";
+
+        List<Userfile> userList=jdbcTemplate.query(tSql, new RowMapper<Userfile>() {
+            Userfile MyUserfile = null;
+            @Override
+            public Userfile mapRow(ResultSet rs, int rowNum) throws SQLException {
+                MyUserfile = new Userfile();
+                //MyUser.setId(rs.getInt("id"));
+                MyUserfile.setReceived(rs.getBoolean("isReceived"));
+                return MyUserfile;
+            }
+        });
+        if(userList.size()>0){
+            return true;
+        }
 
         String sql="insert into userfile values('"+username+"','"+filename+"','"+picfilepath
                 +"',false,false,false,false,'"
@@ -29,6 +44,8 @@ public class userFileService {
         res=jdbcTemplate.update(sql);
         return res > 0;
     }
+
+
 
     //插入新的图片项
     public boolean insertNewPic(String username,String filename,
@@ -63,7 +80,7 @@ public class userFileService {
             return false;
         }
         //set相关为已领取
-        res=AlterInfo(publishername,filename);
+        res=AlterInfo(publishername,filename,username);
         if(!res){
             return false;
         }
@@ -74,7 +91,7 @@ public class userFileService {
         return true;
     }
     public boolean setNewReceive(String username,String filename,String publishername){
-        String sql="select picfilepath from userfile where username= '"+username+"' and filename = '"+filename+"'";
+        String sql="select picfilepath from userfile where username= '"+publishername+"' and filename = '"+filename+"'";
         List<Userfile> userList=jdbcTemplate.query(sql, new RowMapper<Userfile>() {
             Userfile MyUserfile = null;
             @Override
@@ -97,8 +114,9 @@ public class userFileService {
         return res > 0;
     }
 
-    public boolean AlterInfo(String username,String filename){
-        String sql="update publishInfo set isReceive = true where username= '"+username+"' and filename = '"
+    public boolean AlterInfo(String username,String filename,String receivePerson){
+        String sql="update publishInfo set isReceive = true and receivePerson='"+
+                receivePerson+"'where username= '"+username+"' and filename = '"
                 +filename+"'";
         int res;
         res=jdbcTemplate.update(sql);
@@ -140,7 +158,7 @@ public class userFileService {
     public boolean setPublish(String username,String filename, String desInfo,String ReceivedPerson){
         //两项记录
         String sql="insert into publishInfo values ('"+username+"','"+filename+"','"+
-                desInfo+"','"+ReceivedPerson+"',false)";
+                desInfo+"','"+ReceivedPerson+"',false,false)";
         int res;
         res=jdbcTemplate.update(sql);
         if(res<=0){
@@ -200,12 +218,12 @@ public class userFileService {
     }
     public boolean setSubmit(String username,String filename,String publisher){
         boolean res;
-        res=checkFinshed(username,filename,publisher);
-        if(!res){
-            return false;//还有未完成标注任务
-        }
+//        res=checkFinshed(username,filename,publisher);
+//        if(!res){
+//            return false;//还有未完成标注任务
+//        }
         String sql="update userReceived set isSubmit = true where username='"+username+"' and filename ='"
-                +filename+"' and publishername='"+publisher+"'";
+                +filename+"'";
         int t;
         t=jdbcTemplate.update(sql);
         if(t<=0){
@@ -248,20 +266,19 @@ public class userFileService {
         return allPost;
     }
 
-    public List<userReceived> getnoSubmit(String username){
-        String sql="select * from userReceived where isSubmit = false and username='"+username+"'";
-        List<userReceived> allPost = jdbcTemplate.query(sql, new RowMapper<userReceived>() {
-            userReceived onePost = null;
+    public List<PublishInfo> getnoSubmit(String username){
+        String sql="select * from publishInfo where isSubmit = false and receivePerson='"+username+"'";
+        List<PublishInfo> allPost = jdbcTemplate.query(sql, new RowMapper<PublishInfo>() {
+            PublishInfo onePost = null;
             @Override
-            public userReceived mapRow(ResultSet rs, int rowNum) throws SQLException {
-                onePost = new userReceived();
+            public PublishInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
+                onePost = new PublishInfo();
                 //MyUser.setId(rs.getInt("id"));
                 onePost.setUsername(rs.getString("username"));
                 onePost.setFilename(rs.getString("filename"));
-                onePost.setPublisher(rs.getString("publishername"));
-                onePost.setSubmit(rs.getBoolean("isSubmit"));
-                onePost.setPicfilepath(rs.getString("picfilepath"));
-                onePost.setFinished(rs.getBoolean("isFinished"));
+                onePost.setReceived(rs.getBoolean("isReceive"));
+                onePost.setReceivedPerson(rs.getString("receivePerson"));
+                onePost.setDesInfo(rs.getString("desInfo"));
                 return onePost;
             }
         });

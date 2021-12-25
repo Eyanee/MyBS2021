@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<annotation>
+  <username></username>
+  <file></file>
+  <picname>微信图片_20200807105232.jpg</picname>
+  <size>
+    <width>200</width>
+    <height>100</height>
+  </size>
+  <object>
+    <bndbox>
+      <xmin>
+        <74/>
+      </xmin>
+      <xmax>152</xmax>
+      <ymin>23</ymin>
+      <ymax>79</ymax>
+    </bndbox>
+  </object>
+</annotation>

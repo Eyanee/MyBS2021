@@ -57,7 +57,7 @@ export default {
     this.getPosts()
   },
   methods: {
-    handleReceive(index, row) {
+    handleSubmit(index, row) {
       console.log(index, row)
       console.log(this.tableData[index])// 先看看可不可以输出
       var temp = this.tableData[index]
@@ -84,10 +84,10 @@ export default {
           console.log(data)
           // _this.tableData = data
           for (var i = 0; i < data.length; i++) {
-            var temp = { filename: data.filename, desInfo: data.desInfo, username: data.username }
+            var temp = { filename: data[i].filename, desInfo: data[i].desInfo, username: data[i].username }
             _this.tableData.push(temp)
           }
-          console.log(_this.tableData)
+          console.log(_this.tableData,'tabledata')
         })
         .catch(function(error) {
           console.log(error)

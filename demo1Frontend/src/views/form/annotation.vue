@@ -34,7 +34,7 @@
             <div
               class="info"
               :style="{ 'background-image': 'url(' + v.cropImage + ')' }"
-              @click="activePic(v.cropImage)"
+              @click="activePic(v.cropImage,v.code)"
             />
           </div>
         </div>
@@ -108,6 +108,8 @@ export default {
   data() {
     return {
       values: '',
+      filename: '',
+      publisher: '',
       currentDataList: 0,
       formInline: {
         region: '',
@@ -126,6 +128,7 @@ export default {
         rawH: 100,
         currentW: 200,
         currentH: 100,
+        currentCode: 0,
         checked: false, // false表示当前图片还没有标记过
         data: [] // 表示图片矩形标记信息
       },
@@ -191,6 +194,8 @@ export default {
           console.log(_this.dataList[0], 'oo')
           console.log(filename)
           console.log(publisher)
+          localStorage.setItem('dataListName', filename)
+          localStorage.setItem('dataListPublisher', publisher)
           // 这里复现一下第一步
           axios.get('http://localhost:8080/getFilePicsData', {
             params: {
@@ -207,20 +212,22 @@ export default {
                 var tt = data[i].isMarked
                 console.log('is mark is', tt)
                 var temp = { picname: data[i].filename, str: data[i].base64str, width: 200, height: 100,
-                  isMark: data[i].isMarked }
+                  isMark: data[i].isMarked,code: i }
                 console.log('temp is', temp)
                 _this.imageInfo.push(temp)
               }
               // console.log(_this.imageInfo) //默认set所有图片
               for (var j = 0; j < _this.imageInfo.length; j++) {
                 var m = _this.imageInfo[j].str
-                const t = { cropImage: m }
+                var x= _this.imageInfo[j].code
+                const t = { cropImage: m,code: x}
                 _this.pics.push(t)
               }
               console.log(_this.imageInfo, 'imageinfo')
 
               // 修改 currentinfo //其他信息先不传入
               _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
+              _this.currentInfo.code = _this.pics[0].code
             })
         })
     },
@@ -268,11 +275,13 @@ export default {
           _this.pics = [] // 也清空一下
           for (var j = 0; j < _this.imageInfo.length; j++) {
             var m = _this.imageInfo[j].str
-            const t = { cropImage: m }
+            var x= _this.imageInfo[j].code
+            const t = { cropImage: m ,code:x}
             _this.pics.push(t)
           }
           // 修改 currentinfo //其他信息先不传入
           _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
+          _this.currentInfo.code=_this.pics[0].code
         })
       //
     },
@@ -286,15 +295,16 @@ export default {
         if (temp === false) {
           console.log(j)
           var m = _this.imageInfo[j].str
-          const t = { cropImage: m }
+          var x= _this.imageInfo[j].code
+          const t = { cropImage: m , code:x}
           _this.pics.push(t)
         }
       }
       // 修改 currentinfo //其他信息先不传入
       if (_this.pics.length > 0) {
         _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
-      }
-      else {
+        _this.currentInfo.code=_this.pics[0].code
+      } else {
         _this.currentInfo.currentBaseImage = '';
       }
     },
@@ -305,7 +315,8 @@ export default {
         console.log('in loop', j)
         if (_this.imageInfo[j].isMark === true) {
           var m = _this.imageInfo[j].str
-          const t = { cropImage: m }
+          var x = _this.imageInfo[j].code
+          const t = { cropImage: m , code: x}
           _this.pics.push(t)
         }
       }
@@ -313,6 +324,7 @@ export default {
       if (_this.pics.length > 0) {
         console.log('go this')
         _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
+        _this.currentInfo.code=_this.pics[0].code
       } else {
         console.log('go that')
         _this.currentInfo.currentBaseImage = ''
@@ -323,7 +335,8 @@ export default {
       _this.pics = [] // 清空一下
       for (var j = 0; j < _this.imageInfo.length; j++) {
         var m = _this.imageInfo[j].str
-        const t = { cropImage: m }
+        var x= _this.imageInfo[j].code
+        const t = { cropImage: m , code:x}
         _this.pics.push(t)
       }
       // 修改 currentinfo //其他信息先不传入
@@ -384,6 +397,7 @@ export default {
      */
     submitForm() {
       // 要把该图片的mark置掉
+      var _this=this
       const data = this.$refs['aiPanel-editor'].getMarker().getData()
       this.allInfo = data
       console.log(this.allInfo)
@@ -442,12 +456,16 @@ export default {
         Labels.tag.push(tag)
       }
       var a = localStorage.getItem('dataListName')
+      console.log(a,'a')
+      console.log(b,'b')
       var b = localStorage.getItem('dataListPublisher')
+      var s=_this.currentInfo.code
+      console.log('curr coe',s)
       Labels.width = size.width
       Labels.height = size.height
-      Labels.filename = 'test'
-      Labels.picname = 'test'// 注意修改
-      Labels.username = localStorage.getItem('username')
+      Labels.filename = a
+      Labels.picname = _this.imageInfo[s].picname// 注意修改
+      Labels.username = b
       const obj = {
         username: Labels.username,
         filename: Labels.filename,
@@ -477,7 +495,7 @@ export default {
       }, { emulateJSON: true })
         .then(function(response) {
           console.log(response.data)
-          _this.notMark();
+          _this.reload()
         })
         // eslint-disable-next-line handle-callback-err
         .catch(function(error) {
@@ -524,8 +542,10 @@ export default {
       })
     },
     /** 得到当前点击图片*/
-    activePic(v) {
+    activePic(v,t) {
+      console.log('v',t)
       this.currentInfo.currentBaseImage = v
+      this.currentInfo.code=t
     },
 
     handleChange(label) {

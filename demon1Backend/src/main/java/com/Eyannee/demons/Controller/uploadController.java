@@ -105,6 +105,12 @@ public class uploadController {
     }
 
     @RequestMapping(value = "/videoPics" ,method= RequestMethod.POST)
+    public void dealVideoPics(@RequestParam("base64Str[]") String[] base64Str, String username, String videoname) throws IOException {
+        for(int i=0;i<base64Str.length;i++){
+            uploadVideo(base64Str[i],username,videoname);
+        }
+    }
+
     public void uploadVideo(String base64Str, String username, String videoname) throws IOException {
         //System.out.println(base64Str);
         //count图片名称计数\
@@ -112,22 +118,18 @@ public class uploadController {
 
         //进行操作
         Integer t;
-        String Path="D:/VueCode/MyBS2021/MyPics/"+username;
+        String Path="D:/VueCode/MyBS2021/Myfiles/"+username;
         String filename=videoname;
-        String picfilepath=Path+"/"+videoname;
-        String xmlfilepath=Path+"/"+videoname+"/xml";
-        String cocofilepath=Path+"/"+videoname+"/coco";
+        int pos=filename.lastIndexOf('.');
+        filename=filename.substring(0,pos);
+        String picfilepath=Path+"/"+filename+"/pics";
+        String xmlfilepath=Path+"/"+filename+"/xml";
+        String cocofilepath=Path+"/"+filename+"/coco";
         File file1;
-        if(myCounter.get("videoname")==null){
+        if(myCounter.get(videoname)==null){
             file1=new File(picfilepath);
-            if(file1.isDirectory()){
-                filename=filename+"video";
-                picfilepath=picfilepath+"video";
-                xmlfilepath=xmlfilepath+"video";
-                cocofilepath=xmlfilepath+"video";
-            }
             file1.mkdirs();
-            myCounter.put("videoname",1); //若无序号则置1
+            myCounter.put(videoname,1); //若无序号则置1
             //创建新的用户项目条目
             myService.insertUserFile(username,filename,picfilepath,xmlfilepath,cocofilepath);
             t=1;
@@ -139,14 +141,14 @@ public class uploadController {
             file1.mkdirs();
         }
         else{
-            t=myCounter.get("videoname");
+            t=myCounter.get(videoname);
             t=t+1;
-            myCounter.put("videoname",t);//若有序号则++
+            myCounter.put(videoname,t);//若有序号则++
         }
         String picname=t+".jpg";
         //Base64转换
         boolean res;
-        res=myOp.transferAndSave(base64Str,picname,videoname,username);
+        res=myOp.transferAndSave(base64Str,picname,filename,username);
         //存储并建立新的数据库条目
         String filepath=picfilepath+"/"+picname;
         String xmlmarkpath=xmlfilepath+"/"+t+".xml";
@@ -177,7 +179,7 @@ public class uploadController {
     @RequestMapping(value = "/setReceive",method = RequestMethod.POST)
     public boolean setReceive(String username,String filename,String receivePerson){
         boolean res;
-        res=myService.receivefile(username,filename,receivePerson);
+        res=myService.receivefile(receivePerson,filename,username);
         return res;
     }
 
@@ -189,9 +191,9 @@ public class uploadController {
     }
 
     @RequestMapping(value = "/getnoSubmit",method = RequestMethod.GET)
-    public List<userReceived> getnoSubmit(String username){
+    public List<PublishInfo> getnoSubmit(String username){
 
-        List<userReceived> allnoSubmit=myService.getnoSubmit(username);
+        List<PublishInfo> allnoSubmit=myService.getnoSubmit(username);
         return allnoSubmit;
     }
 

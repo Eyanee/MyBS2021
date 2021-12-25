@@ -86,6 +86,7 @@ export default {
     release(row) {
       var user = localStorage.getItem('username')
       var des = row.description
+      var _this=this
       console.log(des)
       this.$http.post('http://localhost:8080/release', {
         username: user,
@@ -94,6 +95,8 @@ export default {
       }, { emulateJSON: true })
         .then(function(response) {
           console.log(response)
+          _this.tableData=[]
+          _this.post()
         })
     }
   }

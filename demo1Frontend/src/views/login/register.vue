@@ -75,7 +75,7 @@
       <div class="tips">
         <div v-show="is_show" v-text="error_text" />
       </div>
-
+      <span> <router-link to="/login" class="reg">点击此处返回</router-link> </span>
     </el-form>
   </div>
 </template>
@@ -281,6 +281,10 @@ $light_gray:#eee;
     color: $dark_gray;
     cursor: pointer;
     user-select: none;
+  }
+  .reg{
+    color:blue;
+    font-size: 15px;
   }
 }
 </style>

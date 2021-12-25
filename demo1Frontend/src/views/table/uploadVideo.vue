@@ -7,7 +7,7 @@
     <el-row :gutter="20">
       <el-col :span="16">
         <el-card shadow="always">
-          <div slot="header" class="title">合成区域</div>
+          <div slot="header" class="title">播放区域</div>
           <div class="box-wrapper">
             <div class="drag-container">
               <video :src="videoSrc" controls />
@@ -60,6 +60,9 @@
             <el-button @click="uploadPics">
               上传
             </el-button>
+            <el-button @click="clearPicture">
+              清空
+            </el-button>
           </div>
           <canvas id="myCanvas" width="343" height="200" />
           <div class="box">
@@ -89,7 +92,7 @@ export default {
       activeEle: {}, // 当前图片上聚焦的叠加组件
       eleNum: 0,
       imgSrc: [],
-      videoname: ''
+      videoname: 'myVideo.mp4'
     }
   },
   computed: {
@@ -119,15 +122,14 @@ export default {
     },
     uploadPics() {
       const name = localStorage.getItem('username')
-      for (var i = 0; i < this.imgSrc.length; i++) {
-        console.log(i + 'tt')
-        this.$http.post('http://localhost:8080/videoPics', {
-          base64Str: this.imgSrc[i],
-          username: name,
-          videoname: this.videoname
-        }, { emulateJSON: true }
-        )
-      }
+      this.$http.post('http://localhost:8080/videoPics', {
+        base64Str: this.imgSrc,
+        username: name,
+        videoname: this.videoname
+      }, { emulateJSON: true }
+      ).then(function(response) {
+        console.log(response)
+      })
     },
     // 元素层级排序
     submitUpload() {
@@ -234,8 +236,10 @@ export default {
       var oGrayImg = canvas.toDataURL('image/jpeg')
       // this.imgSrc = oGrayImg
       this.imgSrc.push(oGrayImg)
+    },
+    clearPicture() {
+      this.imgSrc = []
     }
-
   }
 }
 </script>

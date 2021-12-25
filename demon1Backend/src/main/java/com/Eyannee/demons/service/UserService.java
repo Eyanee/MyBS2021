@@ -128,6 +128,10 @@ public class UserService {
                 break;
             }
         }
+        if(username==null||email==null||password==null||username.length()<6
+                ||password.length()<6||(!checkEmailValid(email))){
+            res=false;
+        }
         User newUser=new User();
         if(res==true){
             sql="update user set name='"+username+"',email='"+email+"',password='"+password+"' where name ='"+

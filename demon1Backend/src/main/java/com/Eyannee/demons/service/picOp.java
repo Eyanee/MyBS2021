@@ -18,7 +18,7 @@ public class picOp {
             return false;
         }
         OutputStream out = null;
-        String folderPath = "D:/VueCode/MyBS2021/MyPics/" + username + "/" + videoname;
+        String folderPath = "D:/VueCode/MyBS2021/Myfiles/" + username + "/" + videoname+"/pics";
         File file1 = new File(folderPath);
         //如果文件夹不存在则创建
         if (!file1.exists() && !file1.isDirectory()) {

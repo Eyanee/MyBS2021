@@ -144,7 +144,8 @@ export default {
       }).then(function(response) {
         // 不管是什么，都把值设置成返回的数据
         var data = response.data
-        _this.userData.username = data.username
+        console.log(data,'user')
+        _this.userData.username = data.name
         _this.userData.password = data.password
         _this.userData.email = data.email
         _this.editable = false

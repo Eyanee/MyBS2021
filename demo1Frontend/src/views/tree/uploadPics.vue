@@ -24,9 +24,12 @@
         <el-col :span="5" class="file">
           <el-input v-model="multipartFile.filefolder" placeholder="请输入项目名" :disabled="false" />
         </el-col>
+        <el-col :span="5" class="tip">
+        <div v-show="is_show"> 上传失败</div>
+        </el-col>
       </el-container>
 
-      <el-carousel :interval="4000" type="card" height="200px" class="picShow">
+      <el-carousel :interval="4000" type="card" height="300px" class="picShow">
         <el-carousel-item v-for="item in picInfo" :key="item" :label="item.codenum">
           <img :src="item.baseStr" class="img">
         </el-carousel-item>
@@ -64,6 +67,7 @@ import qs from 'qs'
 export default {
   data() {
     return {
+      is_show: false,
       dialogImageUrl: '',
       dialogVisible: false,
       disabled: false,
@@ -79,7 +83,12 @@ export default {
     submitUpload() {
       var t = localStorage.getItem('username')
       console.log(this.multipartFile.username)
-      this.multipartFile.filefolder
+      var m=this.multipartFile.filefolder
+      if (m === null || m === '') {
+        this.is_show=true;
+        return;
+      }
+      this.is_show=false;
       this.$refs.upload.submit()
     },
     deletePic() {
@@ -144,6 +153,7 @@ export default {
         var data = response.data
         var file = _this.filename
         var str
+        _this.picInfo=[]
         for (var i = 0; i < data.length; i++) {
           str = data[i].base64str
           console.log(str)
@@ -196,7 +206,13 @@ export default {
 }
 .img{
   /*设置图片宽度和浏览器宽度一致*/
-  height: 100%
+  width: 100%;
+  height: inherit;
+}
+.tip{
+  margin-left: 30px;
+  margin-top: 10px;
+  color: red;
 }
 
 </style>
