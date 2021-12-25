@@ -10,21 +10,21 @@
   <object>
     <bndbox>
       <xmin>
-        <46/>
+        <60/>
       </xmin>
-      <xmax>70</xmax>
-      <ymin>18</ymin>
-      <ymax>51</ymax>
+      <xmax>88</xmax>
+      <ymin>15</ymin>
+      <ymax>48</ymax>
     </bndbox>
   </object>
   <object>
     <bndbox>
       <xmin>
-        <138/>
+        <110/>
       </xmin>
-      <xmax>154</xmax>
-      <ymin>16</ymin>
-      <ymax>71</ymax>
+      <xmax>148</xmax>
+      <ymin>9</ymin>
+      <ymax>87</ymax>
     </bndbox>
   </object>
 </annotation>

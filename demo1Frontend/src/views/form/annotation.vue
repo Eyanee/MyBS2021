@@ -200,11 +200,14 @@ export default {
           })
             .then(function(reponse) {
               var data = reponse.data
-              console.log(data)
+              console.log('have data', data)
               // this.imageInfo = data
               // console.log(this.imageInfo)
               for (var i = 0; i < data.length; i++) { // 在这个地方传入mark的 信息
-                var temp = { picname: data[i].filename, str: data[i].base64str, width: 200, height: 100, isMark: data[i].mark }
+                var tt = data[i].isMarked
+                console.log('is mark is', tt)
+                var temp = { picname: data[i].filename, str: data[i].base64str, width: 200, height: 100,
+                  isMark: data[i].isMarked }
                 console.log('temp is', temp)
                 _this.imageInfo.push(temp)
               }
@@ -214,7 +217,7 @@ export default {
                 const t = { cropImage: m }
                 _this.pics.push(t)
               }
-              console.log(_this.pics)
+              console.log(_this.imageInfo, 'imageinfo')
 
               // 修改 currentinfo //其他信息先不传入
               _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
@@ -254,7 +257,7 @@ export default {
       })
         .then(function(reponse) {
           var data = reponse.data
-          console.log(data)
+          console.log('have mark', data)
           _this.imageInfo = []// 清空一下
           // console.log(this.imageInfo)
           for (var i = 0; i < data.length; i++) { // 这个地方也有修改
@@ -275,29 +278,45 @@ export default {
     },
     notMark() {
       var _this = this
+      console.log(_this.imageInfo, 'check image info')
       _this.pics = [] // 清空一下
       for (var j = 0; j < _this.imageInfo.length; j++) {
-        if (_this.imageInfo.isMark === false) {
+        var temp = _this.imageInfo[j].isMark
+        console.log(temp, 'iiiii')
+        if (temp === false) {
+          console.log(j)
           var m = _this.imageInfo[j].str
           const t = { cropImage: m }
           _this.pics.push(t)
         }
       }
       // 修改 currentinfo //其他信息先不传入
-      _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
+      if (_this.pics.length > 0) {
+        _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
+      }
+      else {
+        _this.currentInfo.currentBaseImage = '';
+      }
     },
     marked() {
       var _this = this
       _this.pics = [] // 清空一下
       for (var j = 0; j < _this.imageInfo.length; j++) {
-        if (_this.imageInfo.isMark === true) {
+        console.log('in loop', j)
+        if (_this.imageInfo[j].isMark === true) {
           var m = _this.imageInfo[j].str
           const t = { cropImage: m }
           _this.pics.push(t)
         }
       }
       // 修改 currentinfo //其他信息先不传入
-      _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
+      if (_this.pics.length > 0) {
+        console.log('go this')
+        _this.currentInfo.currentBaseImage = _this.pics[0].cropImage
+      } else {
+        console.log('go that')
+        _this.currentInfo.currentBaseImage = ''
+      }
     },
     all() {
       var _this = this
@@ -364,6 +383,7 @@ export default {
      * 完成标记，提交标记集合
      */
     submitForm() {
+      // 要把该图片的mark置掉
       const data = this.$refs['aiPanel-editor'].getMarker().getData()
       this.allInfo = data
       console.log(this.allInfo)
@@ -457,6 +477,7 @@ export default {
       }, { emulateJSON: true })
         .then(function(response) {
           console.log(response.data)
+          _this.notMark();
         })
         // eslint-disable-next-line handle-callback-err
         .catch(function(error) {

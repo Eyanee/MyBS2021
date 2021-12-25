@@ -58,6 +58,6 @@ public class PictureController {
             allpicpath.get(i).setFilename(thisFilename);
             allpicpath.get(i).setBase64str(base64Str.get(i));
         }
-        return all;
+        return allpicpath;
     }
 }

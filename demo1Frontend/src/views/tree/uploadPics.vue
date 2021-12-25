@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-card shadow="hover" class="mgb20" style="height:600px;">
+    <el-card shadow="hover" class="mgb20" style="height:1000px;">
       <div class="user-info">
         <el-upload
           ref="upload"
@@ -25,10 +25,42 @@
           <el-input v-model="multipartFile.filefolder" placeholder="请输入项目名" :disabled="false" />
         </el-col>
       </el-container>
+
+      <el-carousel :interval="4000" type="card" height="200px" class="picShow">
+        <el-carousel-item v-for="item in picInfo" :key="item" :label="item.codenum">
+          <img :src="item.baseStr" class="img">
+        </el-carousel-item>
+      </el-carousel>
+
+      <el-container class="picNum">
+        <el-col :span="2" class="file_tips">
+          请输入需要查看的文件目录
+        </el-col>
+        <el-col :span="5" class="file">
+          <el-input v-model="filename" placeholder="请输入文件名" :disabled="false" />
+        </el-col>
+        <el-col :span="5" class="file">
+          <el-button size="small" type="primary" @click="getFilePic">查看</el-button>
+        </el-col>
+      </el-container>
+      <el-container class="picNum">
+        <el-col :span="2" class="file_tips">
+          请输入需要删除的图片序号
+        </el-col>
+        <el-col :span="5" class="file">
+          <el-input v-model="picnum" placeholder="请输入序号" :disabled="false" />
+        </el-col>
+        <el-col :span="5" class="file">
+          <el-button size="small" type="primary" @click="deletePic">删除</el-button>
+        </el-col>
+      </el-container>
+
     </el-card>
   </div>
 </template>
 <script>
+import axios from 'axios'
+import qs from 'qs'
 export default {
   data() {
     return {
@@ -37,7 +69,10 @@ export default {
       disabled: false,
       fileList: [],
       multipartFile: { username: localStorage.getItem('username'), filefolder: 'default' },
-      videoInfo: { username: 'default', filefolder: 'default' }
+      videoInfo: { username: 'default', filefolder: 'default' },
+      picInfo: [], // picname,base64字符串,username,filename,codenum
+      picnum: 0,
+      filename: ''
     }
   },
   methods: {
@@ -46,6 +81,29 @@ export default {
       console.log(this.multipartFile.username)
       this.multipartFile.filefolder
       this.$refs.upload.submit()
+    },
+    deletePic() {
+      var temp = this.picnum
+      console.log(temp)
+      if (temp >= this.picInfo.length){
+        return
+      }
+      var _this = this
+      var picname = _this.picInfo[temp].picname
+      console.log(picname,'picname')
+      var filename = _this.picInfo[temp].filename
+      console.log(filename,'filename')
+      var username = localStorage.getItem('username')
+      console.log(username,'username')
+      _this.$http.post('http://localhost:8080/deletePic', {
+        picname: picname,
+        filename: filename,
+        username: username
+      },{ emulateJSON: true }).then(function(response){
+        var data=response.data
+        console.log(data)
+        _this.getFilePic()
+      })
     },
     handlePreview(file) {
       console.log(file)
@@ -72,6 +130,28 @@ export default {
             console.log('ok')
           })
       }
+    },
+    getFilePic() {
+      var _this = this
+      var user = localStorage.getItem('username')
+      axios.get('http://localhost:8080/getFilePicsData', {
+        params: {
+          username: user,
+          filename: this.filename
+        }
+      }).then(function(response) {
+        console.log(response.data)
+        var data = response.data
+        var file = _this.filename
+        var str
+        for (var i = 0; i < data.length; i++) {
+          str = data[i].base64str
+          console.log(str)
+          var temp = { picname: data[i].filename, baseStr: str, filename: file, codenum: i }
+          _this.picInfo.push(temp)
+        }
+        console.log('picInfo', _this.picInfo)
+      })
     }
   }
 }
@@ -96,4 +176,27 @@ export default {
 .file_tips{
   font-size: 15px;
 }
+.el-carousel__item h3 {
+  color: #475669;
+  font-size: 14px;
+  opacity: 0.75;
+  line-height: 200px;
+  margin: 0;
+}
+
+.el-carousel__item:nth-child(2n) {
+  background-color: #99a9bf;
+}
+
+.el-carousel__item:nth-child(2n+1) {
+  background-color: #d3dce6;
+}
+.picShow{
+  margin-top: 60px;
+}
+.img{
+  /*设置图片宽度和浏览器宽度一致*/
+  height: 100%
+}
+
 </style>

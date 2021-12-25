@@ -40,6 +40,13 @@ public class userFileService {
         res=jdbcTemplate.update(sql);
         return res > 0;
     }
+    public boolean deletepic(String username,String filename,String picname){
+        String sql="delete from picture where username='"+username+"' and filename='"+
+                filename+"' and picname='"+picname+"'";
+        int res;
+        res=jdbcTemplate.update(sql);
+        return res>0;
+    }
 
     //接受任务的数据库
     public boolean receivefile(String username, String filename, String publishername){
@@ -241,6 +248,26 @@ public class userFileService {
         return allPost;
     }
 
+    public List<userReceived> getnoSubmit(String username){
+        String sql="select * from userReceived where isSubmit = false and username='"+username+"'";
+        List<userReceived> allPost = jdbcTemplate.query(sql, new RowMapper<userReceived>() {
+            userReceived onePost = null;
+            @Override
+            public userReceived mapRow(ResultSet rs, int rowNum) throws SQLException {
+                onePost = new userReceived();
+                //MyUser.setId(rs.getInt("id"));
+                onePost.setUsername(rs.getString("username"));
+                onePost.setFilename(rs.getString("filename"));
+                onePost.setPublisher(rs.getString("publishername"));
+                onePost.setSubmit(rs.getBoolean("isSubmit"));
+                onePost.setPicfilepath(rs.getString("picfilepath"));
+                onePost.setFinished(rs.getBoolean("isFinished"));
+                return onePost;
+            }
+        });
+        return allPost;
+    }
+
     public List<String> getUnPost(String username){
         String sql="select filename from userfile where isPublish= false and username ='"+username+"'";
         List<Userfile> allPost = jdbcTemplate.query(sql, new RowMapper<Userfile>() {
@@ -283,6 +310,7 @@ public class userFileService {
 
         return res;
     }
+
 
     public List<upPicInfo> forupInfo(String username,String filename){
         String sql="select * from picture where username='"+username+"' and filename='"+filename+"'";

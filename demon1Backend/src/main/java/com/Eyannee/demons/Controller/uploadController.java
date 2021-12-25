@@ -188,12 +188,34 @@ public class uploadController {
         return allUnpost;
     }
 
+    @RequestMapping(value = "/getnoSubmit",method = RequestMethod.GET)
+    public List<userReceived> getnoSubmit(String username){
+
+        List<userReceived> allnoSubmit=myService.getnoSubmit(username);
+        return allnoSubmit;
+    }
+
+    @RequestMapping(value = "/setSubmit",method = RequestMethod.POST)
+    public boolean setSubmit(String username,String filename,String publishername){
+        boolean res;
+        res=myService.setSubmit(username, filename,publishername);
+        return res;
+    }
+
     @RequestMapping(value = "/release",method = RequestMethod.POST)
     public boolean ReleaseNew(String username,String filename,String des){
         boolean res;
         res=myService.setPublish(username,filename,des," ");
         return res;
     }
+    @RequestMapping(value = "/deletePic",method = RequestMethod.POST)
+    public boolean deletePic(String picname,String filename,String username){
+        boolean res;
+        //只在数据库中删除
+        res=myService.deletepic(username,filename,picname);
+        return res;
+    }
+
 
 
 }

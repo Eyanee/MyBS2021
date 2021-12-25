@@ -8,23 +8,19 @@
         label="序号"
         type="index"
         width="50"
-      >
-      </el-table-column>
+      />
       <el-table-column
         label="项目名称"
         prop="filename"
-      >
-      </el-table-column>
+      />
       <el-table-column
         label="项目信息"
         prop="desInfo"
-      >
-      </el-table-column>
+      />
       <el-table-column
         label="发布人"
         prop="username"
-      >
-      </el-table-column>
+      />
       <el-table-column
         align="right"
       >
@@ -57,16 +53,19 @@ export default {
       search: ''
     }
   },
+  mounted: function() {
+    this.getPosts()
+  },
   methods: {
     handleReceive(index, row) {
       console.log(index, row)
       console.log(this.tableData[index])// 先看看可不可以输出
       var temp = this.tableData[index]
       console.log(temp.username)
-      this.$http.post('http://localhost:8080/setReceive', {
-        username: temp.username,
+      this.$http.post('http://localhost:8080/setSubmit', {
+        publishername: temp.username,
         filename: temp.filename,
-        receivePerson: localStorage.getItem('username')
+        username: localStorage.getItem('username')
       }, { emulateJSON: true })
         .then(function(response) {
           console.log(response.data)
@@ -74,19 +73,26 @@ export default {
     },
     getPosts() {
       var _this = this
-      axios.get('http://localhost:8080/getnoPost')
+      var user = localStorage.getItem('username')
+      axios.get('http://localhost:8080/getnoSubmit', {
+        params: {
+          username: user
+        }
+      })
         .then(function(reponse) {
           var data = reponse.data
           console.log(data)
-          _this.tableData = data
+          // _this.tableData = data
+          for (var i = 0; i < data.length; i++) {
+            var temp = { filename: data.filename, desInfo: data.desInfo, username: data.username }
+            _this.tableData.push(temp)
+          }
+          console.log(_this.tableData)
         })
         .catch(function(error) {
           console.log(error)
         })
     }
-  },
-  mounted: function() {
-    this.getPosts()
   }
 }
 </script>
