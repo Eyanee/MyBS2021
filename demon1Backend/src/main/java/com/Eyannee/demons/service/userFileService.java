@@ -36,6 +36,9 @@ public class userFileService {
         if(userList.size()>0){
             return true;
         }
+        picfilepath=picfilepath.replace("\\","\\\\");
+        xmlfilepath=xmlfilepath.replace("\\","\\\\");
+        cocofilepath=cocofilepath.replace("\\","\\\\");
 
         String sql="insert into userfile values('"+username+"','"+filename+"','"+picfilepath
                 +"',false,false,false,false,'"
@@ -50,8 +53,11 @@ public class userFileService {
     //插入新的图片项
     public boolean insertNewPic(String username,String filename,
                                 String picname,String filepath,String xmlpath, String cocopath){
+        String picfilepath=filepath.replace("\\","\\\\");
+        String xmlfilepath=xmlpath.replace("\\","\\\\");
+        String cocofilepath=cocopath.replace("\\","\\\\");
         String sql="insert into picture values('"+username+"','"+filename+"','"+picname
-                +"','"+filepath+"',false,'"+xmlpath+"','"+cocopath+"')";
+                +"','"+picfilepath+"',false,'"+xmlfilepath+"','"+cocofilepath+"')";
 
         int res;
         res=jdbcTemplate.update(sql);
@@ -106,7 +112,7 @@ public class userFileService {
             return false;
         }
         String picfilepath=userList.get(0).getPicfilepath();
-
+        picfilepath=picfilepath.replace("\\","\\\\");
         sql="insert into userReceived values('"+username+"','"+filename+"','"+publishername+"',false,false,'"+
                 picfilepath+"')";
         int res;
@@ -115,7 +121,7 @@ public class userFileService {
     }
 
     public boolean AlterInfo(String username,String filename,String receivePerson){
-        String sql="update publishInfo set isReceive = true and receivePerson='"+
+        String sql="update publishinfo set isReceive = true,receivePerson='"+
                 receivePerson+"'where username= '"+username+"' and filename = '"
                 +filename+"'";
         int res;
@@ -377,5 +383,85 @@ public class userFileService {
         return allPost;
     }
 
+    public List<PublishInfo> getMyPost(String username){
+        String sql="select * from publishinfo where username='"+username+"'";
+
+        List<PublishInfo> allPost = jdbcTemplate.query(sql, new RowMapper<PublishInfo>() {
+            PublishInfo onePost = new PublishInfo();
+            @Override
+            public PublishInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
+                onePost.setUsername(rs.getString("username"));
+                onePost.setFilename(rs.getString("filename"));
+                onePost.setDesInfo(rs.getString("desInfo"));
+                onePost.setReceivedPerson(rs.getString("receivePerson"));
+                onePost.setSubmit(rs.getBoolean("isSubmit"));
+                return onePost;
+            }
+        });
+        return allPost;
+    }
+
+    public List<Picture> getMarkedPics(String username){
+        String sql="select * from picture where username='"+username+"' and isMarked= true";
+
+        List<Picture> allPost = jdbcTemplate.query(sql, new RowMapper<Picture>() {
+            Picture onePost = new Picture();
+            @Override
+            public Picture mapRow(ResultSet rs, int rowNum) throws SQLException {
+                onePost.setUsername(rs.getString("username"));
+                onePost.setFilename(rs.getString("filename"));
+                onePost.setFilepath(rs.getString("filepath"));
+                onePost.setPicname(rs.getString("picname"));
+                onePost.setCocopath(rs.getString("cocomarkpath"));
+                onePost.setXmlpath(rs.getString("xmlmarkpath"));
+                onePost.setMarked(rs.getBoolean("isMarked"));
+                return onePost;
+            }
+        });
+        return allPost;
+    }
+    public String getxmlpath(String username,String filename,String picname){
+        String sql="select * from picture where username='"+username+"' and filename='"+
+                filename+"'and picname='"+picname+"'";
+
+        List<Picture> allPost = jdbcTemplate.query(sql, new RowMapper<Picture>() {
+            Picture onePost = new Picture();
+            @Override
+            public Picture mapRow(ResultSet rs, int rowNum) throws SQLException {
+                onePost.setUsername(rs.getString("username"));
+                onePost.setFilename(rs.getString("filename"));
+                onePost.setFilepath(rs.getString("filepath"));
+                onePost.setPicname(rs.getString("picname"));
+                onePost.setCocopath(rs.getString("cocomarkpath"));
+                onePost.setXmlpath(rs.getString("xmlmarkpath"));
+                onePost.setMarked(rs.getBoolean("isMarked"));
+                return onePost;
+            }
+
+        });
+        return allPost.get(0).getXmlpath();
+    }
+
+    public String getcocopath(String username,String filename,String picname){
+        String sql="select * from picture where username='"+username+"' and filename='"+
+                filename+"'and picname='"+picname+"'";
+
+        List<Picture> allPost = jdbcTemplate.query(sql, new RowMapper<Picture>() {
+            Picture onePost = new Picture();
+            @Override
+            public Picture mapRow(ResultSet rs, int rowNum) throws SQLException {
+                onePost.setUsername(rs.getString("username"));
+                onePost.setFilename(rs.getString("filename"));
+                onePost.setFilepath(rs.getString("filepath"));
+                onePost.setPicname(rs.getString("picname"));
+                onePost.setCocopath(rs.getString("cocomarkpath"));
+                onePost.setXmlpath(rs.getString("xmlmarkpath"));
+                onePost.setMarked(rs.getBoolean("isMarked"));
+                return onePost;
+            }
+
+        });
+        return allPost.get(0).getCocopath();
+    }
 
 }

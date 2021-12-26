@@ -53,7 +53,7 @@ public class PictureController {
         base64Str=picService.transferAndGet(allpath);
         for(int i=0;i<allpicpath.size();i++){
             String tStr= allpicpath.get(i).getFilepath();
-            int pos=tStr.lastIndexOf("/");
+            int pos=tStr.lastIndexOf("\\");
             String thisFilename=tStr.substring(pos+1);
             allpicpath.get(i).setFilename(thisFilename);
             allpicpath.get(i).setBase64str(base64Str.get(i));

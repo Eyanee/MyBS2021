@@ -6,7 +6,7 @@
           <div class="user-info">
             <img src="../../assets/mark.jpeg" class="user-avator" alt>
             <div class="user-info-cont">
-              <div class="user-info-name" v-text="userData.username" />
+              <div class="user-info-name" v-text="username" />
             </div>
           </div>
         </el-card>
@@ -106,7 +106,8 @@ export default {
       editable: false,
       upload: 0,
       accept: 0,
-      release: 0
+      release: 0,
+      username: localStorage.getItem('username')
     }
   },
   mounted: function() {
@@ -144,8 +145,10 @@ export default {
       }).then(function(response) {
         // 不管是什么，都把值设置成返回的数据
         var data = response.data
-        console.log(data,'user')
+        console.log(data, 'user')
         _this.userData.username = data.name
+        localStorage.setItem('username',data.name)
+        _this.username = data.name
         _this.userData.password = data.password
         _this.userData.email = data.email
         _this.editable = false

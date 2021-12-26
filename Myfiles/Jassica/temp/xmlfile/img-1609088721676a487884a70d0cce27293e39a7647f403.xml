@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<annotation>
+  <username>Jassica</username>
+  <file>temp</file>
+  <picname>img-1609088721676a487884a70d0cce27293e39a7647f403.jpg</picname>
+  <size>
+    <width>200</width>
+    <height>100</height>
+  </size>
+  <object>
+    <bndbox>
+      <xmin>
+        <54/>
+      </xmin>
+      <xmax>146</xmax>
+      <ymin>15</ymin>
+      <ymax>59</ymax>
+    </bndbox>
+  </object>
+</annotation>

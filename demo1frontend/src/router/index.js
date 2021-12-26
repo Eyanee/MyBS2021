@@ -129,6 +129,18 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/CheckTask',
+    component: Layout,
+    children: [
+      {
+        path: 'CheckTask',
+        name: 'CheckTask',
+        component: () => import('@/views/nested/menu4/check'),
+        meta: { title: 'CheckTask', icon: 'check' }
+      }
+    ]
+  },
 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }

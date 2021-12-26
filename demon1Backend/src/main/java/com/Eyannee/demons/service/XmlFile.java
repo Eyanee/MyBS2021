@@ -47,12 +47,18 @@ public class XmlFile {
         format.setNewLineAfterDeclaration(false); // 放置xml文件中第二行为空白行
 
         // 输出xml文件
-        String xmlfolderpath="D:/VueCode/MyBS2021/Myfiles/"+username+"/"+filename+"/xmlfile";
+        String s=System.getProperty("user.dir");
+        int pos=s.lastIndexOf('\\');
+        s=s.substring(0,pos);
+        String folderPath =s+"\\Myfiles"  ;
+        String xmlfolderpath=folderPath+"\\"+username+"\\"+filename+"\\xmlfile";
         File file1=new File(xmlfolderpath);
         if  (!file1.exists()  && !file1.isDirectory()){
             file1.mkdirs();
         }
-        String xmlfilepath=xmlfolderpath+"/"+picname+".xml";
+        int p=picname.lastIndexOf('.');
+        String temp=picname.substring(0,p);
+        String xmlfilepath=xmlfolderpath+"\\"+temp+".xml";
         File file2=new File(xmlfilepath);
         XMLWriter writer = new XMLWriter(new FileOutputStream(file2), format);
 
@@ -129,12 +135,18 @@ public class XmlFile {
         result.element("annotations",annotations);
         result.element("categories",categories);
 
-        String cocofolderpath="D:/VueCode/MyBS2021/Myfiles/"+username+"/"+filename+"/cocofile";
+        String ss=System.getProperty("user.dir");
+        int pos=ss.lastIndexOf('\\');
+        ss=ss.substring(0,pos);
+        String folderPath =ss+"\\Myfiles"  ;
+        String cocofolderpath=folderPath+"\\"+username+"\\"+filename+"\\cocofile";
         File file1=new File(cocofolderpath);
         if  (!file1.exists()  && !file1.isDirectory()){
             file1.mkdirs();
         }
-        String cocofilepath=cocofolderpath+"/"+picname+".coco";
+        int p=picname.lastIndexOf('.');
+        String temp=picname.substring(0,p);
+        String cocofilepath=cocofolderpath+"\\"+temp+".coco";
         File file2=new File(cocofilepath);
         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(file2),"UTF-8");
         BufferedWriter bufferedWriter= new BufferedWriter(outputStreamWriter);//创建字符缓冲输出流对象
@@ -145,4 +157,6 @@ public class XmlFile {
         bufferedWriter.close();//关闭输出流
         return true;
     }
+
+
 }

@@ -6,6 +6,7 @@ public class PublishInfo {
     private String desInfo;
     private String receivePerson;
     private boolean isReceived;
+    private boolean isSubmit;
 
 
     public String getUsername(){
@@ -23,6 +24,9 @@ public class PublishInfo {
     public boolean getIsReceived(){
         return isReceived;
     }
+    public boolean getIsSubmit(){
+        return isSubmit;
+    }
 
     public void setUsername(String s){
         username=s;
@@ -38,5 +42,8 @@ public class PublishInfo {
     }
     public void setDesInfo(String s){
         desInfo=s;
+    }
+    public void setSubmit(boolean s){
+        isSubmit=s;
     }
 }

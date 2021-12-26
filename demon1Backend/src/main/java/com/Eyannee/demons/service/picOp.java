@@ -18,13 +18,17 @@ public class picOp {
             return false;
         }
         OutputStream out = null;
-        String folderPath = "D:/VueCode/MyBS2021/Myfiles/" + username + "/" + videoname+"/pics";
+        String s=System.getProperty("user.dir");
+        int pos=s.lastIndexOf('\\');
+        s=s.substring(0,pos);
+        String folderPath =s+"\\Myfiles\\"+ username + "\\" + videoname+"\\pics";
+       // String folderPath = "D:/VueCode/MyBS2021/Myfiles/" + username + "/" + videoname+"/pics";
         File file1 = new File(folderPath);
         //如果文件夹不存在则创建
         if (!file1.exists() && !file1.isDirectory()) {
             file1.mkdirs();
         }
-        String filePath = folderPath + "/" + picname;
+        String filePath = folderPath + "\\" + picname;
         //检查文件是否存在
         File file2 = new File(filePath);
         if (file2.exists()) {
@@ -34,7 +38,7 @@ public class picOp {
         Base64.Decoder decoder = Base64.getMimeDecoder();
 
         out = new FileOutputStream(filePath);
-        int pos = base64Str.indexOf("base64,");
+        pos = base64Str.indexOf("base64,");
         String temp = base64Str.substring(pos + 7);
         byte[] b = decoder.decode(temp);
         out.write(b);

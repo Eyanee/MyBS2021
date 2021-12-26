@@ -47,6 +47,9 @@
         <span style="margin-right:20px;">还没注册？</span>
         <span> <router-link to="/register" class="reg">点击此处注册</router-link> </span>
       </div>
+      <div v-show="is_show">
+        <span style="margin-right:20px;" class="mytips">登录失败!  请检查您的用户名或密码</span>
+      </div>
 
     </el-form>
   </div>
@@ -77,12 +80,14 @@ export default {
         username: '',
         password: ''
       },
+      username: localStorage.getItem('username'),
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       loading: false,
-      passwordType: 'password'
+      passwordType: 'password',
+      is_show: false
     }
   },
   watch: {
@@ -119,12 +124,14 @@ export default {
             setToken(true)
             const has = getToken()
             console.log(has + 'is')
+            _this.is_show=false;
             localStorage.setItem('valid', true)
             localStorage.setItem('username', _this.loginForm.username)
             localStorage.setItem('password', _this.loginForm.password)
             this.$router.push({ path: this.redirect || '/' })
           } else {
             console.log('error submit!!')
+            _this.is_show=true;
             return false
           }
         })
@@ -249,5 +256,10 @@ $light_gray:#eee;
   .reg{
     color: blue;
   }
+  .mytips{
+    color: red;
+    font-size: 13px;
+  }
 }
+
 </style>

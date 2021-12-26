@@ -133,10 +133,20 @@ export default {
     },
     // 元素层级排序
     submitUpload() {
-      var s = this.$refs.upload.uploadFiles[0].name
-      this.videoname = s
-      this.$refs.upload.submit()
-      this.temp = s
+      var s = this.$refs.upload.uploadFiles[0].raw
+      console.log(s,'s')
+      console.log(this.$refs.upload.uploadFiles,'here')
+      var filereader=new FileReader()
+      filereader.readAsDataURL(s)
+      var _this=this
+      filereader.onload=function(e){
+        _this.videoSrc=e.currentTarget.result
+        console.log(_this.videoSrc)
+      }
+
+      // console.log(this.imgSrc)
+      this.videoname = s.name
+      console.log('vname', s.name)
     },
     flush() {
       this.videoSrc = require('../../assets/video/' + this.temp)

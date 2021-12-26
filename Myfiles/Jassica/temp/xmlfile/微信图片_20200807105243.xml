@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<annotation>
+  <username>Jassica</username>
+  <file>temp</file>
+  <picname>微信图片_20200807105243.jpg</picname>
+  <size>
+    <width>200</width>
+    <height>100</height>
+  </size>
+  <object>
+    <bndbox>
+      <xmin>
+        <6/>
+      </xmin>
+      <xmax>72</xmax>
+      <ymin>26</ymin>
+      <ymax>82</ymax>
+    </bndbox>
+  </object>
+  <object>
+    <bndbox>
+      <xmin>
+        <128/>
+      </xmin>
+      <xmax>174</xmax>
+      <ymin>2</ymin>
+      <ymax>31</ymax>
+    </bndbox>
+  </object>
+  <object>
+    <bndbox>
+      <xmin>
+        <142/>
+      </xmin>
+      <xmax>194</xmax>
+      <ymin>41</ymin>
+      <ymax>77</ymax>
+    </bndbox>
+  </object>
+</annotation>

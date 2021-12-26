@@ -159,7 +159,7 @@ export default {
             _this.error_text = '失败！用户名不唯一'
           } else if (errorcode === 'duplicateEmail') {
             _this.error_text = '失败！邮箱地址不唯一'
-          } else if (errorcode === 'erroraddress') {
+          } else if (errorcode === 'errorAddress') {
             _this.error_text = '邮箱地址错误，请检查您的格式'
           } else if (errorcode === 'success') {
             _this.error_text = '注册成功'
